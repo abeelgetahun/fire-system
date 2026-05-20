@@ -34,6 +34,7 @@ import {
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { apiClient } from "@/lib/api-client"
+import { FireStatusPanel } from "./fire-status-panel"
 
 const iconMap = {
   LayoutDashboard: LayoutDashboard,
@@ -45,6 +46,7 @@ const iconMap = {
   BarChart3: BarChart3,
   Settings: Settings,
   User: UserIcon,
+  Activity: Activity,
 }
 
 interface SidebarProps {
@@ -72,14 +74,13 @@ export function Sidebar({ onClose }: SidebarProps) {
         apiClient.getInventory(),
         apiClient.getUsers(),
       ])
-
       setPendingCount(Array.isArray(transfers) ? transfers.length : 0)
       setLowStockCount(
         Array.isArray(inventory) ? inventory.filter((item) => item.calculatedStatus === "LOW_STOCK").length : 0,
       )
-  setTeamCount(Array.isArray(users) ? users.filter((u) => u.warehouseId === warehouseId).length : 0)
-    } catch (error) {
-      console.error("Failed to fetch manager stats:", error)
+      setTeamCount(Array.isArray(users) ? users.filter((u) => u.warehouseId === warehouseId).length : 0)
+    } catch {
+      // silent
     }
   }
 
@@ -88,37 +89,32 @@ export function Sidebar({ onClose }: SidebarProps) {
   const accessibleRoutes = getAccessibleRoutes(user.role)
 
   return (
-    <div className="pb-12 w-64 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 h-full overflow-y-auto">
+    <div className="pb-12 w-64 bg-card border-r h-full overflow-y-auto">
       <div className="space-y-4 py-4">
         {/* Mobile close button */}
         <div className="flex justify-end px-3 lg:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Header Section */}
         <div className="px-3 py-2">
-          <div className="mb-4 p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg text-white">
+          {/* Brand header */}
+          <div className="mb-4 p-4 bg-primary rounded-lg text-primary-foreground">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-white/20 rounded-lg">
                 <Building2 className="h-5 w-5" />
               </div>
               <div className="flex-1">
                 <h2 className="text-lg font-brand">TeleStock</h2>
-                <p className="text-xs opacity-90">Warehouse Management</p>
+                <p className="text-xs opacity-80">Warehouse Management</p>
               </div>
             </div>
             <div className="text-sm">
               <div className="font-medium">{user.name}</div>
-              <div className="text-xs opacity-90">{getRoleDisplayName(user.role)}</div>
+              <div className="text-xs opacity-80">{getRoleDisplayName(user.role)}</div>
               {user.warehouse && (
-                <div className="text-xs opacity-75 mt-1 flex items-center gap-1">
+                <div className="text-xs opacity-70 mt-1 flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {user.warehouse.name}
                 </div>
@@ -128,7 +124,9 @@ export function Sidebar({ onClose }: SidebarProps) {
 
           {/* Main Navigation */}
           <div className="space-y-1 mb-6">
-            <div className="px-2 py-1 text-xs font-semibold text-slate-600 uppercase tracking-wider">Navigation</div>
+            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Navigation
+            </div>
             {accessibleRoutes.map((route) => {
               const Icon = iconMap[route.icon as keyof typeof iconMap] || LayoutDashboard
               return (
@@ -137,11 +135,10 @@ export function Sidebar({ onClose }: SidebarProps) {
                   href={route.path}
                   onClick={() => onClose?.()}
                   className={cn(
-                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm",
+                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                     pathname === route.path
-                      ? "bg-blue-100 text-blue-700 shadow-sm border-l-4 border-blue-600"
-                      : "text-slate-700",
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-foreground/70 hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <Icon className="mr-3 h-4 w-4" />
@@ -157,18 +154,19 @@ export function Sidebar({ onClose }: SidebarProps) {
           {user.role === "WAREHOUSE_MANAGER" && (
             <>
               <div className="space-y-1 mb-6">
-                <div className="px-2 py-1 text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                   <Shield className="h-3 w-3" />
                   Manager Tools
                 </div>
 
-                {/* Pending Approvals */}
                 <Link
                   href="/transfers"
+                  onClick={() => onClose?.()}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-orange-50 hover:text-orange-700",
-                    pathname === "/transfers" ? "bg-orange-100 text-orange-700" : "text-slate-700",
+                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                    pathname === "/transfers"
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-foreground/70 hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <div className="flex items-center">
@@ -176,37 +174,35 @@ export function Sidebar({ onClose }: SidebarProps) {
                     Approve Transfers
                   </div>
                   {pendingCount > 0 && (
-                    <Badge variant="destructive" className="h-5 text-xs">
-                      {pendingCount}
-                    </Badge>
+                    <Badge variant="destructive" className="h-5 text-xs">{pendingCount}</Badge>
                   )}
                 </Link>
 
-                {/* Team Management */}
                 <Link
                   href="/users"
+                  onClick={() => onClose?.()}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-green-50 hover:text-green-700",
-                    pathname === "/users" ? "bg-green-100 text-green-700" : "text-slate-700",
+                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                    pathname === "/users"
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-foreground/70 hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <div className="flex items-center">
                     <Users className="mr-3 h-4 w-4" />
                     Manage Team
                   </div>
-                  <Badge variant="outline" className="h-5 text-xs">
-                    {teamCount}
-                  </Badge>
+                  <Badge variant="outline" className="h-5 text-xs">{teamCount}</Badge>
                 </Link>
 
-                {/* Stock Alerts */}
                 <Link
                   href="/inventory"
+                  onClick={() => onClose?.()}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-yellow-50 hover:text-yellow-700",
-                    pathname === "/inventory" ? "bg-yellow-100 text-yellow-700" : "text-slate-700",
+                    "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                    pathname === "/inventory"
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-foreground/70 hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <div className="flex items-center">
@@ -214,32 +210,32 @@ export function Sidebar({ onClose }: SidebarProps) {
                     Stock Alerts
                   </div>
                   {lowStockCount > 0 && (
-                    <Badge variant="secondary" className="h-5 text-xs bg-yellow-100 text-yellow-800">
-                      {lowStockCount}
-                    </Badge>
+                    <Badge variant="secondary" className="h-5 text-xs">{lowStockCount}</Badge>
                   )}
                 </Link>
 
-                {/* Warehouse Analytics */}
                 <Link
                   href="/reports"
+                  onClick={() => onClose?.()}
                   className={cn(
-                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-purple-50 hover:text-purple-700",
-                    pathname === "/reports" ? "bg-purple-100 text-purple-700" : "text-slate-700",
+                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                    pathname === "/reports"
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-foreground/70 hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <TrendingUp className="mr-3 h-4 w-4" />
                   Analytics & Reports
                 </Link>
 
-                {/* Audit Management */}
                 <Link
                   href="/audit"
+                  onClick={() => onClose?.()}
                   className={cn(
-                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-indigo-50 hover:text-indigo-700",
-                    pathname === "/audit" ? "bg-indigo-100 text-indigo-700" : "text-slate-700",
+                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                    pathname === "/audit"
+                      ? "bg-primary/10 text-primary border-l-2 border-primary"
+                      : "text-foreground/70 hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <ClipboardCheck className="mr-3 h-4 w-4" />
@@ -249,45 +245,25 @@ export function Sidebar({ onClose }: SidebarProps) {
 
               <Separator className="my-4" />
 
-              {/* Warehouse Operations */}
               <div className="space-y-1 mb-6">
-                <div className="px-2 py-1 text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                   <Activity className="h-3 w-3" />
                   Operations
                 </div>
 
-                {/* Quick Add Inventory */}
-                <Link
-                  href="/inventory/add"
-                  className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200"
-                >
+                <Link href="/inventory/add" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                   <Plus className="mr-3 h-4 w-4" />
                   Add New Item
                 </Link>
-
-                {/* Warehouse Layout */}
-                <Link
-                  href="/warehouses"
-                  className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200"
-                >
+                <Link href="/warehouses" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                   <MapPin className="mr-3 h-4 w-4" />
                   Warehouse Layout
                 </Link>
-
-                {/* Activity Log */}
-                <Link
-                  href="/activity"
-                  className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-700 transition-all duration-200"
-                >
+                <Link href="/activity" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                   <Clock className="mr-3 h-4 w-4" />
                   Activity Log
                 </Link>
-
-                {/* Document Management */}
-                <Link
-                  href="/documents"
-                  className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
-                >
+                <Link href="/documents" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                   <FileText className="mr-3 h-4 w-4" />
                   Documents
                 </Link>
@@ -296,107 +272,70 @@ export function Sidebar({ onClose }: SidebarProps) {
               <Separator className="my-4" />
 
               {/* Quick Stats Card */}
-              <div className="mx-2 p-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border">
-                <div className="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1">
+              <div className="mx-2 p-3 bg-muted/60 rounded-lg border">
+                <div className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
                   <Target className="h-3 w-3" />
                   Today's Overview
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-600">Pending Tasks</span>
-                    <Badge variant="outline" className="h-4 text-xs">
-                      {pendingCount}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-600">Team Members</span>
-                    <Badge variant="outline" className="h-4 text-xs">
-                      {teamCount}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-600">Low Stock</span>
-                    <Badge variant={lowStockCount > 0 ? "destructive" : "outline"} className="h-4 text-xs">
-                      {lowStockCount}
-                    </Badge>
-                  </div>
+                  {[
+                    { label: "Pending Tasks", value: pendingCount, variant: "outline" as const },
+                    { label: "Team Members",  value: teamCount,    variant: "outline" as const },
+                    { label: "Low Stock",     value: lowStockCount, variant: lowStockCount > 0 ? "destructive" as const : "outline" as const },
+                  ].map(({ label, value, variant }) => (
+                    <div key={label} className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">{label}</span>
+                      <Badge variant={variant} className="h-4 text-xs">{value}</Badge>
+                    </div>
+                  ))}
                 </div>
               </div>
             </>
           )}
 
-          {/* General Quick Actions for Other Roles */}
+          {/* Quick Actions — non-manager roles */}
           {user.role !== "WAREHOUSE_MANAGER" && (
             <div className="space-y-1">
-              <div className="px-2 py-1 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Quick Actions
               </div>
 
-              {/* Profile for all users */}
               <Link
                 href="/profile"
+                onClick={() => onClose?.()}
                 className={cn(
-                  "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                  "hover:bg-blue-50 hover:text-blue-700",
-                  pathname === "/profile" ? "bg-blue-100 text-blue-700" : "text-slate-700",
+                  "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                  pathname === "/profile"
+                    ? "bg-primary/10 text-primary border-l-2 border-primary"
+                    : "text-foreground/70 hover:bg-muted hover:text-foreground",
                 )}
               >
                 <UserIcon className="mr-3 h-4 w-4" />
                 My Profile
               </Link>
 
-              {/* Role-specific actions */}
               {user.role === "INVENTORY_CLERK" && (
                 <>
-                  <Link
-                    href="/inventory/add"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
-                  >
+                  <Link href="/inventory/add" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                     <Plus className="mr-3 h-4 w-4" />
                     Add Inventory
                   </Link>
-                  <Link
-                    href="/inventory"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
-                  >
+                  <Link href="/inventory" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                     <Package className="mr-3 h-4 w-4" />
                     Update Stock
                   </Link>
                 </>
               )}
 
-              {user.role === "ADMIN" && (
-                <>
-                  <Link
-                    href="/users"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-all duration-200"
-                  >
-                    <Users className="mr-3 h-4 w-4" />
-                    Manage Users
-                  </Link>
-                  <Link
-                    href="/warehouses"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200"
-                  >
-                    <Building2 className="mr-3 h-4 w-4" />
-                    Manage Warehouses
-                  </Link>
-                </>
-              )}
+              {/* ADMIN: quick actions removed — all covered by main Navigation above */}
 
               {user.role === "TECHNICIAN" && (
                 <>
-                  <Link
-                    href="/maintenance"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-700 transition-all duration-200"
-                  >
+                  <Link href="/maintenance" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                     <Settings className="mr-3 h-4 w-4" />
                     Maintenance Tasks
                   </Link>
-                  <Link
-                    href="/equipment"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200"
-                  >
+                  <Link href="/equipment" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                     <Truck className="mr-3 h-4 w-4" />
                     Equipment Status
                   </Link>
@@ -405,17 +344,11 @@ export function Sidebar({ onClose }: SidebarProps) {
 
               {user.role === "AUDITOR" && (
                 <>
-                  <Link
-                    href="/audit/schedule"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
-                  >
+                  <Link href="/audit/schedule" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                     <Calendar className="mr-3 h-4 w-4" />
                     Schedule Audit
                   </Link>
-                  <Link
-                    href="/audit/reports"
-                    className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
-                  >
+                  <Link href="/audit/reports" onClick={() => onClose?.()} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground transition-all duration-150">
                     <Download className="mr-3 h-4 w-4" />
                     Audit Reports
                   </Link>
@@ -423,6 +356,16 @@ export function Sidebar({ onClose }: SidebarProps) {
               )}
             </div>
           )}
+        </div>
+
+        {/* Fire Monitor */}
+        <Separator className="my-3" />
+        <div className="pb-4">
+          <p className="px-5 mb-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Activity className="h-3 w-3" />
+            Warehouse Status
+          </p>
+          <FireStatusPanel />
         </div>
       </div>
     </div>

@@ -7,10 +7,9 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart"
 import { apiClient } from "@/lib/api-client"
+import { FireStatusSection } from "@/components/dashboards/fire-status-section"
 import {
   Building2,
   Package,
@@ -21,11 +20,8 @@ import {
   CheckCircle,
   ArrowUpRight,
   BarChart3,
-  Zap,
   Shield,
   Clock,
-  Target,
-  Sparkles,
 } from "lucide-react"
 import {
   BarChart,
@@ -59,6 +55,29 @@ interface WarehouseStat {
   status: string
 }
 
+// Single brand palette — all derived from primary blue
+const BRAND = {
+  primary:   "hsl(221, 83%, 53%)",
+  primary60: "hsl(221, 83%, 60%)",
+  primary80: "hsl(221, 83%, 75%)",
+  primary20: "hsl(221, 83%, 93%)",
+  // Semantic status colors (kept purposeful, not decorative)
+  success:   "hsl(142, 71%, 45%)",
+  warning:   "hsl(38, 92%, 50%)",
+  danger:    "hsl(0, 84%, 60%)",
+  // Chart palette — blue tones only
+  chart: [
+    "hsl(221, 83%, 53%)",
+    "hsl(221, 83%, 63%)",
+    "hsl(221, 83%, 73%)",
+    "hsl(221, 83%, 40%)",
+    "hsl(221, 83%, 83%)",
+    "hsl(210, 70%, 50%)",
+    "hsl(235, 70%, 58%)",
+    "hsl(200, 70%, 50%)",
+  ],
+}
+
 export function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -76,7 +95,6 @@ export function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      // Fetch all needed datasets in parallel
       const [data, inv, cats, usrs, trans] = await Promise.all([
         apiClient.getDashboardStats(),
         apiClient.getInventory({ status: "all" }),
@@ -101,9 +119,7 @@ export function AdminDashboard() {
       setCategories(Array.isArray(cats) ? cats : [])
       setUsers(Array.isArray(usrs) ? usrs : [])
       setTransfers(Array.isArray(trans) ? trans : [])
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error)
-      // Enhanced fallback data for better visualization
+    } catch {
       setStats({
         totalWarehouses: 8,
         totalItems: 2847,
@@ -115,144 +131,70 @@ export function AdminDashboard() {
         recentActivity: [],
       })
       setRecentActivity([
-        {
-          id: 1,
-          time: new Date(Date.now() - 1000 * 60 * 15),
-          item: "5G Router Huawei",
-          from: "Addis Ababa HQ",
-          to: "Dire Dawa Branch",
-          status: "APPROVED",
-        },
-        {
-          id: 2,
-          time: new Date(Date.now() - 1000 * 60 * 45),
-          item: "Fiber Optic Cable 500m",
-          from: "Hawassa Depot",
-          to: "Addis Ababa HQ",
-          status: "PENDING",
-        },
-        {
-          id: 3,
-          time: new Date(Date.now() - 1000 * 60 * 90),
-          item: "Network Switch Cisco",
-          from: "Dire Dawa Branch",
-          to: "Mekelle Office",
-          status: "APPROVED",
-        },
-        {
-          id: 4,
-          time: new Date(Date.now() - 1000 * 60 * 120),
-          item: "Satellite Modem",
-          from: "Bahir Dar Center",
-          to: "Hawassa Depot",
-          status: "REJECTED",
-        },
-        {
-          id: 5,
-          time: new Date(Date.now() - 1000 * 60 * 180),
-          item: "Base Station Antenna",
-          from: "Addis Ababa HQ",
-          to: "Jimma Branch",
-          status: "COMPLETED",
-        },
+        { id: 1, time: new Date(Date.now() - 900000),  item: "5G Router Huawei",       from: "Addis Ababa HQ",   to: "Dire Dawa Branch", status: "APPROVED" },
+        { id: 2, time: new Date(Date.now() - 2700000), item: "Fiber Optic Cable 500m", from: "Hawassa Depot",    to: "Addis Ababa HQ",   status: "PENDING" },
+        { id: 3, time: new Date(Date.now() - 5400000), item: "Network Switch Cisco",   from: "Dire Dawa Branch", to: "Mekelle Office",   status: "APPROVED" },
+        { id: 4, time: new Date(Date.now() - 7200000), item: "Satellite Modem",        from: "Bahir Dar Center", to: "Hawassa Depot",    status: "REJECTED" },
+        { id: 5, time: new Date(Date.now() - 10800000),item: "Base Station Antenna",   from: "Addis Ababa HQ",   to: "Jimma Branch",     status: "COMPLETED" },
       ])
       setWarehouseStats([
-        { name: "Addis Ababa HQ", items: 680, capacity: 1200, utilization: 57, status: "Active" },
-        { name: "Dire Dawa Branch", items: 420, capacity: 800, utilization: 53, status: "Active" },
-        { name: "Hawassa Depot", items: 350, capacity: 700, utilization: 50, status: "Active" },
-        { name: "Bahir Dar Center", items: 290, capacity: 600, utilization: 48, status: "Active" },
-        { name: "Mekelle Office", items: 240, capacity: 500, utilization: 48, status: "Active" },
-        { name: "Jimma Branch", items: 180, capacity: 400, utilization: 45, status: "Active" },
-        { name: "Dessie Hub", items: 150, capacity: 350, utilization: 43, status: "Active" },
-        { name: "Gondar Station", items: 120, capacity: 300, utilization: 40, status: "Active" },
+        { name: "Addis Ababa HQ",   items: 680, capacity: 1200, utilization: 57, status: "Active" },
+        { name: "Dire Dawa Branch", items: 420, capacity: 800,  utilization: 53, status: "Active" },
+        { name: "Hawassa Depot",    items: 350, capacity: 700,  utilization: 50, status: "Active" },
+        { name: "Bahir Dar Center", items: 290, capacity: 600,  utilization: 48, status: "Active" },
+        { name: "Mekelle Office",   items: 240, capacity: 500,  utilization: 48, status: "Active" },
+        { name: "Jimma Branch",     items: 180, capacity: 400,  utilization: 45, status: "Active" },
+        { name: "Dessie Hub",       items: 150, capacity: 350,  utilization: 43, status: "Active" },
+        { name: "Gondar Station",   items: 120, capacity: 300,  utilization: 40, status: "Active" },
       ])
-
       setInventoryItems([
-        { calculatedStatus: "IN_STOCK" },
-        { calculatedStatus: "IN_STOCK" },
-        { calculatedStatus: "IN_STOCK" },
-        { calculatedStatus: "IN_STOCK" },
-        { calculatedStatus: "IN_STOCK" },
-        { calculatedStatus: "LOW_STOCK" },
-        { calculatedStatus: "LOW_STOCK" },
+        ...Array(5).fill({ calculatedStatus: "IN_STOCK" }),
+        ...Array(2).fill({ calculatedStatus: "LOW_STOCK" }),
         { calculatedStatus: "OUT_OF_STOCK" },
       ])
       setCategories([
-        { name: "Fiber Cables", _count: { inventoryItems: 450 } },
-        { name: "Network Equipment", _count: { inventoryItems: 380 } },
-        { name: "5G Infrastructure", _count: { inventoryItems: 320 } },
+        { name: "Fiber Cables",        _count: { inventoryItems: 450 } },
+        { name: "Network Equipment",   _count: { inventoryItems: 380 } },
+        { name: "5G Infrastructure",   _count: { inventoryItems: 320 } },
         { name: "Satellite Equipment", _count: { inventoryItems: 280 } },
-        { name: "Power Systems", _count: { inventoryItems: 240 } },
-        { name: "Testing Tools", _count: { inventoryItems: 180 } },
-        { name: "Security Systems", _count: { inventoryItems: 150 } },
-        { name: "Backup Equipment", _count: { inventoryItems: 120 } },
+        { name: "Power Systems",       _count: { inventoryItems: 240 } },
+        { name: "Testing Tools",       _count: { inventoryItems: 180 } },
+        { name: "Security Systems",    _count: { inventoryItems: 150 } },
+        { name: "Backup Equipment",    _count: { inventoryItems: 120 } },
       ])
       setUsers([
-        { role: "ADMIN" },
-        { role: "ADMIN" },
-        { role: "WAREHOUSE_MANAGER" },
-        { role: "WAREHOUSE_MANAGER" },
-        { role: "WAREHOUSE_MANAGER" },
-        { role: "WAREHOUSE_MANAGER" },
-        { role: "INVENTORY_CLERK" },
-        { role: "INVENTORY_CLERK" },
-        { role: "INVENTORY_CLERK" },
-        { role: "INVENTORY_CLERK" },
-        { role: "INVENTORY_CLERK" },
-        { role: "INVENTORY_CLERK" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "TECHNICIAN" },
-        { role: "AUDITOR" },
-        { role: "AUDITOR" },
-        { role: "AUDITOR" },
+        ...Array(2).fill({ role: "ADMIN" }),
+        ...Array(4).fill({ role: "WAREHOUSE_MANAGER" }),
+        ...Array(6).fill({ role: "INVENTORY_CLERK" }),
+        ...Array(8).fill({ role: "TECHNICIAN" }),
+        ...Array(3).fill({ role: "AUDITOR" }),
       ])
       setTransfers([
-        { status: "PENDING" },
-        { status: "PENDING" },
-        { status: "PENDING" },
-        { status: "APPROVED" },
-        { status: "APPROVED" },
-        { status: "APPROVED" },
-        { status: "APPROVED" },
-        { status: "APPROVED" },
-        { status: "COMPLETED" },
-        { status: "COMPLETED" },
-        { status: "COMPLETED" },
-        { status: "COMPLETED" },
-        { status: "COMPLETED" },
-        { status: "COMPLETED" },
-        { status: "REJECTED" },
-        { status: "REJECTED" },
+        ...Array(3).fill({ status: "PENDING" }),
+        ...Array(5).fill({ status: "APPROVED" }),
+        ...Array(6).fill({ status: "COMPLETED" }),
+        ...Array(2).fill({ status: "REJECTED" }),
       ])
     } finally {
       setLoading(false)
     }
   }
 
-  // Enhanced chart data with better styling
   const itemsByWarehouse = useMemo(
     () =>
       warehouseStats.map((w) => ({
         name: w.name.replace(/\s+(HQ|Branch|Depot|Center|Office|Hub|Station)$/, ""),
         items: w.items,
         capacity: w.capacity,
-        fill: `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`,
       })),
     [warehouseStats],
   )
 
   const utilizationByWarehouse = useMemo(
-    () =>
-      warehouseStats.map((w) => ({
-        name: w.name.replace(/\s+(HQ|Branch|Depot|Center|Office|Hub|Station)$/, ""),
-        utilization: w.utilization,
-      })),
+    () => warehouseStats.map((w) => ({
+      name: w.name.replace(/\s+(HQ|Branch|Depot|Center|Office|Hub|Station)$/, ""),
+      utilization: w.utilization,
+    })),
     [warehouseStats],
   )
 
@@ -261,16 +203,9 @@ export function AdminDashboard() {
       const d = new Date()
       d.setDate(d.getDate() - (13 - i))
       const key = d.toISOString().slice(0, 10)
-      return {
-        key,
-        label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-        count: 0,
-        completed: 0,
-        pending: 0,
-      }
+      return { key, label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }), count: 0, completed: 0, pending: 0 }
     })
     const map = new Map(days.map((d) => [d.key, d]))
-
     for (const a of recentActivity) {
       const k = new Date(a.time).toISOString().slice(0, 10)
       const row = map.get(k)
@@ -280,33 +215,24 @@ export function AdminDashboard() {
         if (a.status === "PENDING") row.pending += 1
       }
     }
-
-    const result = Array.from(map.values()).map((d) => ({
-      day: d.label,
-      transfers: d.count,
-      completed: d.completed,
-      pending: d.pending,
-    }))
-
+    const result = Array.from(map.values()).map((d) => ({ day: d.label, transfers: d.count, completed: d.completed, pending: d.pending }))
     const hasData = result.some((r) => r.transfers > 0)
-    return hasData
-      ? result
-      : [
-          { day: "Jan 1", transfers: 8, completed: 6, pending: 2 },
-          { day: "Jan 2", transfers: 12, completed: 9, pending: 3 },
-          { day: "Jan 3", transfers: 6, completed: 4, pending: 2 },
-          { day: "Jan 4", transfers: 15, completed: 12, pending: 3 },
-          { day: "Jan 5", transfers: 9, completed: 7, pending: 2 },
-          { day: "Jan 6", transfers: 18, completed: 14, pending: 4 },
-          { day: "Jan 7", transfers: 11, completed: 8, pending: 3 },
-          { day: "Jan 8", transfers: 14, completed: 11, pending: 3 },
-          { day: "Jan 9", transfers: 7, completed: 5, pending: 2 },
-          { day: "Jan 10", transfers: 16, completed: 13, pending: 3 },
-          { day: "Jan 11", transfers: 10, completed: 8, pending: 2 },
-          { day: "Jan 12", transfers: 13, completed: 10, pending: 3 },
-          { day: "Jan 13", transfers: 9, completed: 7, pending: 2 },
-          { day: "Jan 14", transfers: 12, completed: 9, pending: 3 },
-        ]
+    return hasData ? result : [
+      { day: "Jan 1",  transfers: 8,  completed: 6,  pending: 2 },
+      { day: "Jan 2",  transfers: 12, completed: 9,  pending: 3 },
+      { day: "Jan 3",  transfers: 6,  completed: 4,  pending: 2 },
+      { day: "Jan 4",  transfers: 15, completed: 12, pending: 3 },
+      { day: "Jan 5",  transfers: 9,  completed: 7,  pending: 2 },
+      { day: "Jan 6",  transfers: 18, completed: 14, pending: 4 },
+      { day: "Jan 7",  transfers: 11, completed: 8,  pending: 3 },
+      { day: "Jan 8",  transfers: 14, completed: 11, pending: 3 },
+      { day: "Jan 9",  transfers: 7,  completed: 5,  pending: 2 },
+      { day: "Jan 10", transfers: 16, completed: 13, pending: 3 },
+      { day: "Jan 11", transfers: 10, completed: 8,  pending: 2 },
+      { day: "Jan 12", transfers: 13, completed: 10, pending: 3 },
+      { day: "Jan 13", transfers: 9,  completed: 7,  pending: 2 },
+      { day: "Jan 14", transfers: 12, completed: 9,  pending: 3 },
+    ]
   }, [recentActivity])
 
   const inventoryStatusData = useMemo(() => {
@@ -316,61 +242,37 @@ export function AdminDashboard() {
       counts[k] = (counts[k] || 0) + 1
     }
     return [
-      { name: "In Stock", value: counts.IN_STOCK || 0, fill: "#10b981" },
-      { name: "Low Stock", value: counts.LOW_STOCK || 0, fill: "#f59e0b" },
-      { name: "Out of Stock", value: counts.OUT_OF_STOCK || 0, fill: "#ef4444" },
+      { name: "In Stock",     value: counts.IN_STOCK     || 0, fill: BRAND.success },
+      { name: "Low Stock",    value: counts.LOW_STOCK    || 0, fill: BRAND.warning },
+      { name: "Out of Stock", value: counts.OUT_OF_STOCK || 0, fill: BRAND.danger  },
     ]
   }, [inventoryItems])
 
-  const categoryDistributionData = useMemo(() => {
-    return categories
-      .map((c, index) => ({
-        name: c.name,
-        count: c._count?.inventoryItems || 0,
-        fill: `hsl(${(index * 45) % 360}, 65%, 55%)`,
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8)
-  }, [categories])
+  const categoryDistributionData = useMemo(
+    () =>
+      categories
+        .map((c, i) => ({ name: c.name, count: c._count?.inventoryItems || 0, fill: BRAND.chart[i % BRAND.chart.length] }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8),
+    [categories],
+  )
 
   const usersByRoleData = useMemo(() => {
-    const roleLabels = {
-      ADMIN: "Administrators",
-      WAREHOUSE_MANAGER: "Managers",
-      INVENTORY_CLERK: "Clerks",
-      TECHNICIAN: "Technicians",
-      AUDITOR: "Auditors",
-    }
-    const colors = {
-      ADMIN: "#dc2626",
-      WAREHOUSE_MANAGER: "#2563eb",
-      INVENTORY_CLERK: "#16a34a",
-      TECHNICIAN: "#ca8a04",
-      AUDITOR: "#9333ea",
-    }
+    const roleLabels = { ADMIN: "Admin", WAREHOUSE_MANAGER: "Manager", INVENTORY_CLERK: "Clerk", TECHNICIAN: "Technician", AUDITOR: "Auditor" }
     const order = ["ADMIN", "WAREHOUSE_MANAGER", "INVENTORY_CLERK", "TECHNICIAN", "AUDITOR"]
     const counts: Record<string, number> = {}
     for (const u of users) counts[u.role] = (counts[u.role] || 0) + 1
-    return order.map((role) => ({
+    return order.map((role, i) => ({
       role: roleLabels[role as keyof typeof roleLabels],
       count: counts[role] || 0,
-      fill: colors[role as keyof typeof colors],
+      fill: BRAND.chart[i % BRAND.chart.length],
     }))
   }, [users])
 
   const transfersByStatusData = useMemo(() => {
-    const statusLabels = {
-      PENDING: "Pending",
-      APPROVED: "Approved",
-      REJECTED: "Rejected",
-      COMPLETED: "Completed",
-    }
-    const colors = {
-      PENDING: "#f59e0b",
-      APPROVED: "#3b82f6",
-      REJECTED: "#ef4444",
-      COMPLETED: "#10b981",
-    }
+    const statusLabels = { PENDING: "Pending", APPROVED: "Approved", REJECTED: "Rejected", COMPLETED: "Completed" }
+    // Semantic colors preserved — status indicators must be recognisable
+    const colors = { PENDING: BRAND.warning, APPROVED: BRAND.primary, REJECTED: BRAND.danger, COMPLETED: BRAND.success }
     const statuses = ["PENDING", "APPROVED", "REJECTED", "COMPLETED"]
     const counts: Record<string, number> = {}
     for (const t of transfers) counts[t.status] = (counts[t.status] || 0) + 1
@@ -385,32 +287,36 @@ export function AdminDashboard() {
     new Intl.NumberFormat("en-ET", { style: "currency", currency: "ETB", minimumFractionDigits: 0 }).format(val)
 
   const formatTimeAgo = (date: string | Date) => {
-    const now = new Date().getTime()
-    const d = new Date(date).getTime()
-    const diff = Math.max(0, now - d)
+    const diff = Math.max(0, Date.now() - new Date(date).getTime())
     const minutes = Math.floor(diff / 60000)
     if (minutes < 60) return `${minutes}m ago`
     const hours = Math.floor(minutes / 60)
     if (hours < 24) return `${hours}h ago`
-    const days = Math.floor(hours / 24)
-    return `${days}d ago`
+    return `${Math.floor(hours / 24)}d ago`
+  }
+
+  const statusDot = (status: string) => {
+    if (status === "APPROVED")  return BRAND.success
+    if (status === "PENDING")   return BRAND.warning
+    if (status === "COMPLETED") return BRAND.primary
+    return BRAND.danger
   }
 
   if (loading) {
     return (
-      <div className="space-y-8 p-6">
+      <div className="space-y-6 p-4">
         <div className="space-y-2">
-          <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-64 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
+          <div className="h-8 bg-muted rounded-lg w-64 animate-pulse" />
+          <div className="h-4 bg-muted rounded w-96 animate-pulse" />
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="border-0 shadow-lg">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
               <CardContent className="p-6">
                 <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4"></div>
-                  <div className="h-8 bg-gradient-to-r from-gray-300 to-gray-400 rounded w-1/2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-8 bg-muted rounded w-1/2" />
+                  <div className="h-3 bg-muted rounded w-2/3" />
                 </div>
               </CardContent>
             </Card>
@@ -421,279 +327,226 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
-      {/* Enhanced Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl sm:rounded-3xl blur-3xl"></div>
-        <div className="relative bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-white/20 shadow-xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg sm:rounded-xl">
-                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
-                </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  Admin Dashboard
-                </h1>
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-yellow-500 animate-pulse" />
-              </div>
-              <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Complete system overview and intelligent management</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <Badge variant="secondary" className="gap-1 sm:gap-2 px-2 sm:px-3 lg:px-4 py-1 sm:py-2 bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">
-                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">System</span> Online
-              </Badge>
-              <Badge variant="outline" className="gap-1 sm:gap-2 px-2 sm:px-3 lg:px-4 py-1 sm:py-2 bg-blue-50 text-blue-700 border-blue-200 text-xs sm:text-sm">
-                <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                {stats?.totalWarehouses || 0} <span className="hidden sm:inline">Facilities</span>
-              </Badge>
-              <Badge variant="outline" className="gap-1 sm:gap-2 px-2 sm:px-3 lg:px-4 py-1 sm:py-2 bg-purple-50 text-purple-700 border-purple-200 text-xs sm:text-sm">
-                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Live</span> Data
-              </Badge>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6 pb-8">
+
+      {/* ── Status Badges ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline" className="gap-1.5 text-xs border-primary/30 text-primary bg-primary/5">
+          <CheckCircle className="h-3 w-3" />
+          System Online
+        </Badge>
+        <Badge variant="outline" className="gap-1.5 text-xs">
+          <Building2 className="h-3 w-3" />
+          {stats?.totalWarehouses || 0} Facilities
+        </Badge>
+        <Badge variant="outline" className="gap-1.5 text-xs">
+          <Clock className="h-3 w-3" />
+          Live Data
+        </Badge>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-blue-100">Total Warehouses</CardTitle>
-            <Building2 className="h-5 w-5 text-blue-200" />
+      {/* ── KPI Cards ── */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Warehouses</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Building2 className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent className="relative z-10">
+          <CardContent>
             <div className="text-3xl font-bold">{stats?.totalWarehouses || 0}</div>
-            <p className="text-xs text-blue-200 flex items-center gap-1 mt-1">
-              <Target className="h-3 w-3" />
-              Active facilities nationwide
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <ArrowUpRight className="h-3 w-3 text-primary" />
+              Active facilities
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-emerald-100">Total Items</CardTitle>
-            <Package className="h-5 w-5 text-emerald-200" />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Package className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent className="relative z-10">
+          <CardContent>
             <div className="text-3xl font-bold">{stats?.totalItems || 0}</div>
-            <p className="text-xs text-emerald-200 flex items-center gap-1 mt-1">
-              <ArrowUpRight className="h-3 w-3" />
-              Inventory items tracked
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <ArrowUpRight className="h-3 w-3 text-primary" />
+              Inventory tracked
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-purple-100">System Users</CardTitle>
-            <Users className="h-5 w-5 text-purple-200" />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">System Users</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Users className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent className="relative z-10">
+          <CardContent>
             <div className="text-3xl font-bold">{stats?.totalUsers || 0}</div>
-            <p className="text-xs text-purple-200 flex items-center gap-1 mt-1">
-              <CheckCircle className="h-3 w-3" />
-              <span className="text-purple-100">{stats?.activeUsers || 0} currently active</span>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <CheckCircle className="h-3 w-3 text-primary" />
+              {stats?.activeUsers || 0} active
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-amber-100">Total Value</CardTitle>
-            <TrendingUp className="h-5 w-5 text-amber-200" />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold">{formatETBCurrency(stats?.totalValue || 0)}</div>
-            <p className="text-xs text-amber-200 flex items-center gap-1 mt-1">
-              <Zap className="h-3 w-3" />
-              Total inventory value
-            </p>
+          <CardContent>
+            <div className="text-2xl font-bold tabular-nums">{formatETBCurrency(stats?.totalValue || 0)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Inventory value</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alert Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-orange-50 to-red-50 border-l-4 border-l-orange-500">
+      {/* ── Fire Status ── */}
+      <FireStatusSection />
+
+      {/* ── Alert Cards ── */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="border-l-4 border-l-amber-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-800">Critical Stock Alerts</CardTitle>
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <CardTitle className="text-sm font-medium">Critical Stock Alerts</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-700">{stats?.lowStockItems || 0}</div>
-            <p className="text-xs text-orange-600 mt-1">Items requiring immediate attention</p>
+            <div className="text-3xl font-bold">{stats?.lowStockItems || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Items needing attention</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-l-blue-500">
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800">Pending Transfers</CardTitle>
-            <Activity className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-sm font-medium">Pending Transfers</CardTitle>
+            <Activity className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-700">{stats?.pendingTransfers || 0}</div>
-            <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+            <div className="text-3xl font-bold">{stats?.pendingTransfers || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              Awaiting management approval
+              Awaiting approval
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Enhanced Charts Section */}
-      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-3">
-        {/* Items by Warehouse - Enhanced */}
-        <Card className="xl:col-span-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+      {/* ── Main Charts ── */}
+      <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
                   Warehouse Distribution
                 </CardTitle>
-                <CardDescription className="text-gray-600 text-sm">Inventory allocation across all facilities</CardDescription>
+                <CardDescription>Inventory allocation across facilities</CardDescription>
               </div>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                Live Data
-              </Badge>
+              <Badge variant="outline" className="text-xs border-primary/30 text-primary">Live</Badge>
             </div>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
-                items: { label: "Items", color: "hsl(217, 91%, 60%)" },
-                capacity: { label: "Capacity", color: "hsl(217, 91%, 80%)" },
+                items:    { label: "Items",    color: BRAND.primary },
+                capacity: { label: "Capacity", color: BRAND.primary80 },
               }}
-              className="aspect-auto h-[250px] sm:h-[300px] lg:h-[350px] w-full"
+              className="aspect-auto h-[280px] sm:h-[320px] w-full"
             >
-              <BarChart data={itemsByWarehouse} margin={{ top: 20, right: 15, left: 10, bottom: 60 }}>
+              <BarChart data={itemsByWarehouse} margin={{ top: 10, right: 10, left: 0, bottom: 55 }}>
                 <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(217, 91%, 60%)" />
-                    <stop offset="100%" stopColor="hsl(217, 91%, 80%)" />
+                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={BRAND.primary} />
+                    <stop offset="100%" stopColor={BRAND.primary80} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                 <XAxis
                   dataKey="name"
                   tickLine={false}
                   axisLine={false}
-                  angle={-45}
+                  angle={-40}
                   textAnchor="end"
-                  height={60}
+                  height={55}
                   interval={0}
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 />
-                <YAxis
-                  allowDecimals={false}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 10, fill: "#64748b" }}
-                />
-                <ChartTooltip cursor={{ fill: "rgba(59, 130, 246, 0.1)" }} content={<ChartTooltipContent />} />
-                <Bar
-                  dataKey="items"
-                  fill="url(#barGradient)"
-                  radius={[4, 4, 0, 0]}
-                  stroke="hsl(217, 91%, 60%)"
-                  strokeWidth={1}
-                />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <ChartTooltip cursor={{ fill: "hsl(var(--muted)/0.5)" }} content={<ChartTooltipContent />} />
+                <Bar dataKey="items" fill="url(#barGrad)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        {/* Transfer Activity - Enhanced */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg sm:text-xl">Transfer Trends</CardTitle>
-            <CardDescription className="text-sm">14-day activity overview</CardDescription>
+        <Card>
+          <CardHeader>
+            <CardTitle>Transfer Trends</CardTitle>
+            <CardDescription>14-day activity</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
-              config={{
-                transfers: { label: "Total", color: "hsl(142, 71%, 45%)" },
-                completed: { label: "Completed", color: "hsl(217, 91%, 60%)" },
-                pending: { label: "Pending", color: "hsl(25, 95%, 53%)" },
-              }}
-              className="aspect-auto h-[250px] sm:h-[300px] lg:h-[350px] w-full"
+              config={{ transfers: { label: "Transfers", color: BRAND.primary } }}
+              className="aspect-auto h-[280px] sm:h-[320px] w-full"
             >
-              <AreaChart data={transferActivityData} margin={{ top: 20, right: 15, left: 10, bottom: 20 }}>
+              <AreaChart data={transferActivityData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
                 <defs>
-                  <linearGradient id="transferGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.1} />
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={BRAND.primary} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={BRAND.primary} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 9, fill: "#64748b" }} />
-                <YAxis
-                  allowDecimals={false}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 9, fill: "#64748b" }}
-                />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Area
-                  type="monotone"
-                  dataKey="transfers"
-                  stroke="hsl(142, 71%, 45%)"
-                  fill="url(#transferGradient)"
-                  strokeWidth={2}
-                />
+                <Area type="monotone" dataKey="transfers" stroke={BRAND.primary} fill="url(#areaGrad)" strokeWidth={2} />
               </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
 
-      {/* Advanced Analytics Grid */}
-      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        {/* Inventory Status Pie */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Stock Health</CardTitle>
-            <CardDescription>Current inventory status</CardDescription>
+      {/* ── Analytics Grid ── */}
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Stock Health */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Stock Health</CardTitle>
+            <CardDescription>Inventory status</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
-                inStock: { label: "In Stock", color: "#10b981" } ,
-                lowStock: { label: "Low Stock", color: "#f59e0b" },
-                outStock: { label: "Out of Stock", color: "#ef4444" },
+                inStock:  { label: "In Stock",     color: BRAND.success },
+                lowStock: { label: "Low Stock",    color: BRAND.warning },
+                outStock: { label: "Out of Stock", color: BRAND.danger  },
               }}
-              className="aspect-auto h-[280px] w-full"
+              className="aspect-auto h-[220px] w-full"
             >
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Pie
-                  data={inventoryStatusData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={50}
-                  outerRadius={90}
-                  paddingAngle={2}
-                  stroke="#fff"
-                  strokeWidth={2}
-                >
-                  {inventoryStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                <Pie data={inventoryStatusData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={2} stroke="transparent">
+                  {inventoryStatusData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill} />
                   ))}
                 </Pie>
               </PieChart>
             </ChartContainer>
-            <div className="flex items-center justify-center gap-4 pt-3 text-xs">
-              {inventoryStatusData.map((s, idx) => (
-                <div key={`legend-${idx}`} className="flex items-center gap-1.5">
-                  <span className="inline-block h-2 w-2 rounded-[2px]" style={{ backgroundColor: s.fill }} />
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-1 text-xs">
+              {inventoryStatusData.map((s, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-sm inline-block" style={{ backgroundColor: s.fill }} />
                   <span className="text-muted-foreground">{s.name}</span>
                 </div>
               ))}
@@ -701,107 +554,63 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Categories Distribution */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Top Categories</CardTitle>
+        {/* Top Categories */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Top Categories</CardTitle>
             <CardDescription>Equipment distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{ count: { label: "Items", color: "hsl(262, 83%, 58%)" } }} className="aspect-auto h-[280px] w-full">
-              <BarChart
-                data={categoryDistributionData}
-                layout="horizontal"
-                margin={{ top: 20, right: 30, left: 80, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis
-                  type="number"
-                  allowDecimals={false}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: "#64748b" }}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tickLine={false}
-                  axisLine={false}
-                  width={75}
-                  tick={{ fontSize: 10, fill: "#64748b" }}
-                />
+            <ChartContainer config={{ count: { label: "Items", color: BRAND.primary } }} className="aspect-auto h-[260px] w-full">
+              <BarChart data={categoryDistributionData} layout="horizontal" margin={{ top: 5, right: 15, left: 75, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} width={72} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {categoryDistributionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
+                  {categoryDistributionData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                 </Bar>
               </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        {/* Users by Role */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Team Structure</CardTitle>
-            <CardDescription>User role distribution</CardDescription>
+        {/* Team Structure */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Team Structure</CardTitle>
+            <CardDescription>Role distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{ count: { label: "Users", color: "hsl(221, 83%, 53%)" } }} className="aspect-auto h-[280px] w-full">
-              <BarChart data={usersByRoleData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis
-                  dataKey="role"
-                  tickLine={false}
-                  axisLine={false}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  tick={{ fontSize: 10, fill: "#64748b" }}
-                />
-                <YAxis
-                  allowDecimals={false}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: "#64748b" }}
-                />
+            <ChartContainer config={{ count: { label: "Users", color: BRAND.primary } }} className="aspect-auto h-[260px] w-full">
+              <BarChart data={usersByRoleData} margin={{ top: 5, right: 10, left: 5, bottom: 50 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="role" tickLine={false} axisLine={false} angle={-35} textAnchor="end" height={50} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {usersByRoleData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {usersByRoleData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                 </Bar>
               </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        {/* Transfers by Status */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Transfer Status</CardTitle>
+        {/* Transfer Status */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Transfer Status</CardTitle>
             <CardDescription>Workflow distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              config={{ count: { label: "Transfers", color: "hsl(142, 71%, 45%)" } }}
-              className="aspect-auto h-[280px] w-full"
-            >
-              <BarChart data={transfersByStatusData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="status" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#64748b" }} />
-                <YAxis
-                  allowDecimals={false}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: "#64748b" }}
-                />
+            <ChartContainer config={{ count: { label: "Transfers", color: BRAND.primary } }} className="aspect-auto h-[260px] w-full">
+              <BarChart data={transfersByStatusData} margin={{ top: 5, right: 10, left: 5, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="status" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {transfersByStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {transfersByStatusData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                 </Bar>
               </BarChart>
             </ChartContainer>
@@ -809,102 +618,69 @@ export function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Enhanced Bottom Section */}
+      {/* ── Bottom Section ── */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Warehouse Utilization */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Facility Utilization</CardTitle>
-            <CardDescription>Real-time capacity monitoring across all warehouses</CardDescription>
+        {/* Facility Utilization */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Facility Utilization</CardTitle>
+            <CardDescription>Capacity monitoring across all warehouses</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {utilizationByWarehouse.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">No utilization data available.</p>
             ) : (
-              <div className="space-y-4">
-                {utilizationByWarehouse.map((w, idx) => (
-                  <div key={`${w.name}-${idx}`} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-gray-800">{w.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{w.utilization}%</span>
-                        <Badge
-                          variant={w.utilization > 80 ? "destructive" : w.utilization > 60 ? "secondary" : "default"}
-                          className="text-xs"
-                        >
-                          {w.utilization > 80 ? "High" : w.utilization > 60 ? "Medium" : "Low"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="h-3 w-full rounded-full bg-gray-200 overflow-hidden">
-                      <div
-                        className={`h-3 rounded-full transition-all duration-500 ${
-                          w.utilization > 80
-                            ? "bg-gradient-to-r from-red-500 to-red-600"
-                            : w.utilization > 60
-                              ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                              : "bg-gradient-to-r from-green-500 to-emerald-500"
-                        }`}
-                        style={{ width: `${w.utilization}%` }}
-                      />
+              utilizationByWarehouse.map((w, i) => (
+                <div key={`${w.name}-${i}`} className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">{w.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">{w.utilization}%</span>
+                      <Badge
+                        variant={w.utilization > 80 ? "destructive" : "outline"}
+                        className="text-xs h-5"
+                      >
+                        {w.utilization > 80 ? "High" : w.utilization > 60 ? "Med" : "Low"}
+                      </Badge>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${w.utilization}%`,
+                        backgroundColor: w.utilization > 80 ? BRAND.danger : w.utilization > 60 ? BRAND.warning : BRAND.primary,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))
             )}
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Live Activity Feed</CardTitle>
-            <CardDescription>Real-time transfer operations and system events</CardDescription>
+        {/* Live Activity Feed */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Activity Feed</CardTitle>
+            <CardDescription>Recent transfer operations</CardDescription>
           </CardHeader>
           <CardContent>
             {recentActivity.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">No recent activity to display.</p>
             ) : (
-              <div className="space-y-4 max-h-80 overflow-y-auto">
+              <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
                 {recentActivity.slice(0, 8).map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          a.status === "APPROVED"
-                            ? "bg-green-500"
-                            : a.status === "PENDING"
-                              ? "bg-yellow-500"
-                              : a.status === "COMPLETED"
-                                ? "bg-blue-500"
-                                : "bg-red-500"
-                        }`}
-                      ></div>
-                    </div>
+                  <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: statusDot(a.status) }} />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">{a.item}</p>
-                        <span className="text-xs text-gray-500">{formatTimeAgo(a.time)}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium truncate">{a.item}</p>
+                        <span className="text-xs text-muted-foreground shrink-0">{formatTimeAgo(a.time)}</span>
                       </div>
-                      <p className="text-xs text-gray-600">
-                        {a.from} → {a.to}
-                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{a.from} → {a.to}</p>
                     </div>
-                    <Badge
-                      variant={
-                        a.status === "APPROVED"
-                          ? "default"
-                          : a.status === "COMPLETED"
-                            ? "default"
-                            : a.status === "PENDING"
-                              ? "secondary"
-                              : "outline"
-                      }
-                      className="text-xs"
-                    >
+                    <Badge variant={a.status === "REJECTED" ? "destructive" : "outline"} className="text-xs shrink-0">
                       {a.status}
                     </Badge>
                   </div>
@@ -915,47 +691,33 @@ export function AdminDashboard() {
         </Card>
       </div>
 
-      {/* System Health Footer */}
-      <Card className="border-0 shadow-xl bg-gradient-to-r from-green-50 to-blue-50">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            System Health Monitor
+      {/* ── System Health ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-primary" />
+            System Health
           </CardTitle>
-          <CardDescription>Real-time system performance and service status</CardDescription>
+          <CardDescription>Service status overview</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <div>
-                  <span className="text-sm font-medium text-gray-800">Database</span>
-                  <p className="text-xs text-gray-600">PostgreSQL Connection</p>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { label: "Database",        sub: "PostgreSQL",   status: "Healthy" },
+              { label: "API Services",    sub: "REST Endpoints", status: "Running" },
+              { label: "Background Jobs", sub: "Automated Tasks", status: "Active" },
+            ].map(({ label, sub, status }) => (
+              <div key={label} className="flex items-center justify-between p-4 rounded-xl bg-muted/40">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                  <div>
+                    <span className="text-sm font-medium">{label}</span>
+                    <p className="text-xs text-muted-foreground">{sub}</p>
+                  </div>
                 </div>
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary">{status}</Badge>
               </div>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Healthy</Badge>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <div>
-                  <span className="text-sm font-medium text-gray-800">API Services</span>
-                  <p className="text-xs text-gray-600">REST Endpoints</p>
-                </div>
-              </div>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Running</Badge>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <div>
-                  <span className="text-sm font-medium text-gray-800">Background Jobs</span>
-                  <p className="text-xs text-gray-600">Automated Tasks</p>
-                </div>
-              </div>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>

@@ -84,6 +84,10 @@ class ApiClient {
     return this.get("/dashboard/stats")
   }
 
+  async getFireDetectionStats() {
+    return this.get("/fire-detection/stats")
+  }
+
   async getWarehouses() {
     return this.get("/warehouse")
   }

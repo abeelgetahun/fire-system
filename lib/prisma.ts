@@ -22,7 +22,7 @@ function appendQueryParams(url: string, params: Record<string, string>): string 
 const rawDbUrl = process.env.DATABASE_URL
 const isNeon = rawDbUrl?.includes("neon.tech")
 const patchedDbUrl = rawDbUrl
-  ? appendQueryParams(rawDbUrl, isNeon ? { connection_limit: "1", pgbouncer: "true" } : {})
+  ? appendQueryParams(rawDbUrl, isNeon ? { connection_limit: "3", pgbouncer: "true" } : {})
   : undefined
 
 export const prisma =

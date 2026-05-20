@@ -5,7 +5,7 @@ import type React from "react"
 import Image from "next/image"
 import appLogo from "@/assets/app_logo.png"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
 import { Button } from "@/components/ui/button"
@@ -21,8 +21,26 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [showDemoCredentials, setShowDemoCredentials] = useState(false)
+  const [particles, setParticles] = useState<
+    { left: string; top: string; width: string; height: string; background: string; animationDelay: string; animationDuration: string }[]
+  >([])
   const { login } = useAuth()
   const router = useRouter()
+
+  // Generate particles only on the client to avoid SSR hydration mismatch
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 50 }, () => ({
+        left:              `${Math.random() * 100}%`,
+        top:               `${Math.random() * 100}%`,
+        width:             `${2 + Math.random() * 4}px`,
+        height:            `${2 + Math.random() * 4}px`,
+        background:        `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 255, ${0.1 + Math.random() * 0.3})`,
+        animationDelay:    `${Math.random() * 10}s`,
+        animationDuration: `${5 + Math.random() * 10}s`,
+      }))
+    )
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,22 +83,14 @@ export default function LoginPage() {
         <div className="absolute bottom-32 left-32 w-20 h-20 bg-gradient-to-r from-cyan-400/30 to-blue-600/30 rounded-full blur-xl animate-morph-3"></div>
         <div className="absolute bottom-10 right-10 w-28 h-28 bg-gradient-to-bl from-emerald-400/20 to-teal-600/20 rounded-3xl blur-lg animate-morph-4 rotate-12"></div>
 
-        {/* Dynamic Particle System */}
+        {/* Dynamic Particle System — client-only to avoid hydration mismatch */}
         <div className="absolute inset-0">
-          {[...Array(50)].map((_, i) => (
+          {particles.map((p, i) => (
             <div
               key={i}
               className="absolute rounded-full animate-particle-float"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${2 + Math.random() * 4}px`,
-                height: `${2 + Math.random() * 4}px`,
-                background: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 255, ${0.1 + Math.random() * 0.3})`,
-                animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${5 + Math.random() * 10}s`,
-              }}
-            ></div>
+              style={p}
+            />
           ))}
         </div>
 

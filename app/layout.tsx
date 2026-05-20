@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/auth-context"
 import { Toaster } from "@/components/ui/toaster"
 import SplashScreen from "@/components/layout/splash-screen"
 import { Analytics } from "@vercel/analytics/next"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const carterOne = Carter_One({ weight: "400", subsets: ["latin"], variable: "--font-carter-one" })
@@ -29,14 +30,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${carterOne.variable}`}>
+    <html lang="en" className={`${inter.variable} ${carterOne.variable}`} suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthProvider>
-          <SplashScreen />
-          {children}
-          <Toaster />
-          <Analytics />
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <AuthProvider>
+            <SplashScreen />
+            {children}
+            <Toaster />
+            <Analytics />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

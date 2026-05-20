@@ -148,6 +148,9 @@ export function getAccessibleRoutes(userRole: UserRole) {
   // Check each resource for route access
   if (hasPermission(userRole, "warehouses", "read")) {
     routes.push({ path: "/warehouses", name: "Warehouses", icon: "Building2" })
+    routes.push({ path: "/warehouse-status", name: "Warehouse Status", icon: "Activity" })
+  } else {
+    routes.push({ path: "/warehouse-status", name: "Warehouse Status", icon: "Activity" })
   }
 
   if (hasPermission(userRole, "inventory", "read")) {

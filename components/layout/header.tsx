@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Search, User, Menu, X } from "lucide-react"
+import { Search, User, Menu, X, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -14,7 +14,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/context/auth-context"
+import { FireAlertBell } from "@/components/layout/fire-alert-bell"
 import { useState } from "react"
+import { useTheme } from "next-themes"
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -23,6 +25,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth()
   const [searchOpen, setSearchOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   const initials = ((user?.name || "")
     .split(" ")
@@ -68,9 +71,9 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="hidden sm:flex items-center space-x-4 flex-1 lg:ml-0">
         <div className="relative max-w-md w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input 
-            placeholder="Search inventory, warehouses..." 
-            className="pl-10 w-full sm:w-80" 
+          <Input
+            placeholder="Search inventory, warehouses..."
+            className="pl-10 w-full sm:w-80"
           />
         </div>
       </div>
@@ -81,9 +84,9 @@ export function Header({ onMenuClick }: HeaderProps) {
           <div className="flex items-center space-x-2 w-full max-w-sm">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input 
-                placeholder="Search..." 
-                className="pl-10 w-full" 
+              <Input
+                placeholder="Search..."
+                className="pl-10 w-full"
                 autoFocus
               />
             </div>
@@ -106,11 +109,21 @@ export function Header({ onMenuClick }: HeaderProps) {
         )}
       </div>
 
-      <div className="flex items-center space-x-2 sm:space-x-4">
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-          <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 text-xs">3</Badge>
+      <div className="flex items-center space-x-1 sm:space-x-2">
+        <FireAlertBell />
+
+        {/* Dark mode toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
         </Button>
 
         {/* User Menu */}
