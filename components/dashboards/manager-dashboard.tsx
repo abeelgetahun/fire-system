@@ -14,23 +14,36 @@ import {
   Package,
   Users,
   TrendingUp,
-  Building2,
   Clock,
   CheckCircle,
   ArrowUpRight,
   ArrowDownRight,
   Activity,
-  Target,
   BarChart3,
-  PieChartIcon,
   Calendar,
-  MapPin,
-  DollarSign,
   Truck,
   Shield,
-  Star,
 } from "lucide-react"
 import Link from "next/link"
+
+const BRAND = {
+  primary:   "hsl(221, 83%, 53%)",
+  primary60: "hsl(221, 83%, 60%)",
+  primary80: "hsl(221, 83%, 75%)",
+  success:   "hsl(142, 71%, 45%)",
+  warning:   "hsl(38, 92%, 50%)",
+  danger:    "hsl(0, 84%, 60%)",
+  chart: [
+    "hsl(221, 83%, 53%)",
+    "hsl(221, 83%, 63%)",
+    "hsl(221, 83%, 73%)",
+    "hsl(221, 83%, 40%)",
+    "hsl(221, 83%, 83%)",
+    "hsl(210, 70%, 50%)",
+    "hsl(235, 70%, 58%)",
+    "hsl(200, 70%, 50%)",
+  ],
+}
 
 export function ManagerDashboard() {
   const { user } = useAuth()
@@ -54,46 +67,17 @@ export function ManagerDashboard() {
         setPendingTransfers(transfers)
         setWarehouseUsers(users)
 
-        // Mock recent activity for better visualization
         setRecentActivity([
-          {
-            id: 1,
-            action: "Stock Added",
-            item: "Fiber Optic Cable",
-            user: "John Doe",
-            time: new Date(Date.now() - 1000 * 60 * 30),
-            type: "success",
-          },
-          {
-            id: 2,
-            action: "Transfer Approved",
-            item: "Router Switch",
-            user: "Jane Smith",
-            time: new Date(Date.now() - 1000 * 60 * 60 * 2),
-            type: "info",
-          },
-          {
-            id: 3,
-            action: "Low Stock Alert",
-            item: "Network Adapter",
-            user: "System",
-            time: new Date(Date.now() - 1000 * 60 * 60 * 4),
-            type: "warning",
-          },
-          {
-            id: 4,
-            action: "Audit Completed",
-            item: "Warehouse A",
-            user: "Mike Johnson",
-            time: new Date(Date.now() - 1000 * 60 * 60 * 6),
-            type: "success",
-          },
+          { id: 1, action: "Stock Added", item: "Fiber Optic Cable", user: "John Doe", time: new Date(Date.now() - 1000 * 60 * 30), type: "success" },
+          { id: 2, action: "Transfer Approved", item: "Router Switch", user: "Jane Smith", time: new Date(Date.now() - 1000 * 60 * 60 * 2), type: "info" },
+          { id: 3, action: "Low Stock Alert", item: "Network Adapter", user: "System", time: new Date(Date.now() - 1000 * 60 * 60 * 4), type: "warning" },
+          { id: 4, action: "Audit Completed", item: "Warehouse A", user: "Mike Johnson", time: new Date(Date.now() - 1000 * 60 * 60 * 6), type: "success" },
         ])
       } finally {
         setLoading(false)
       }
     })()
-  }, [user]) // Updated to use the entire user object
+  }, [user])
 
   const stats = useMemo(() => {
     const lowStockByCategory = new Map<string, number>()
@@ -148,9 +132,9 @@ export function ManagerDashboard() {
 
   const stockStatusData = useMemo(
     () => [
-      { name: "In Stock", value: stats.statusCounts.IN_STOCK, fill: "#10b981" },
-      { name: "Low Stock", value: stats.statusCounts.LOW_STOCK, fill: "#f59e0b" },
-      { name: "Out of Stock", value: stats.statusCounts.OUT_OF_STOCK, fill: "#ef4444" },
+      { name: "In Stock", value: stats.statusCounts.IN_STOCK, fill: BRAND.success },
+      { name: "Low Stock", value: stats.statusCounts.LOW_STOCK, fill: BRAND.warning },
+      { name: "Out of Stock", value: stats.statusCounts.OUT_OF_STOCK, fill: BRAND.danger },
     ],
     [stats.statusCounts],
   )
@@ -186,17 +170,18 @@ export function ManagerDashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        <div className="space-y-2">
+          <div className="h-8 bg-muted rounded-lg w-64 animate-pulse" />
+          <div className="h-4 bg-muted rounded w-96 animate-pulse" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
               <CardContent className="p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-8 bg-muted rounded w-1/2" />
+                  <div className="h-3 bg-muted rounded w-2/3" />
                 </div>
               </CardContent>
             </Card>
@@ -207,8 +192,8 @@ export function ManagerDashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Quick Actions Header */}
+    <div className="space-y-6 pb-8">
+      {/* Quick Actions */}
       <div className="flex items-center justify-end gap-3">
         <Link href="/inventory">
           <Button>
@@ -224,78 +209,71 @@ export function ManagerDashboard() {
         </Link>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Total Items</CardTitle>
-            <div className="p-2 bg-emerald-500/20 rounded-lg">
-              <Package className="h-4 w-4 text-emerald-600" />
+      {/* KPI Cards */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Package className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-              {stats.totalItems.toLocaleString()}
-            </div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              Inventory items managed
+          <CardContent>
+            <div className="text-3xl font-bold">{stats.totalItems.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <ArrowUpRight className="h-3 w-3 text-primary" />
+              Inventory managed
             </p>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Warehouse Capacity</CardTitle>
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <BarChart3 className="h-4 w-4 text-blue-600" />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Warehouse Capacity</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <BarChart3 className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-              {stats.warehouseCapacity.toFixed(1)}%
-            </div>
-            <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+          <CardContent>
+            <div className="text-3xl font-bold">{stats.warehouseCapacity.toFixed(1)}%</div>
+            <div className="w-full bg-muted rounded-full h-2 mt-2">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${stats.warehouseCapacity}%` }}
-              ></div>
+                className="h-2 rounded-full transition-all duration-500"
+                style={{
+                  width: `${stats.warehouseCapacity}%`,
+                  backgroundColor: BRAND.primary,
+                }}
+              />
             </div>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Current utilization</p>
+            <p className="text-xs text-muted-foreground mt-1">Current utilization</p>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">
-              Pending Approvals
-            </CardTitle>
-            <div className="p-2 bg-orange-500/20 rounded-lg">
-              <Clock className="h-4 w-4 text-orange-600" />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Approvals</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Clock className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-orange-900 dark:text-orange-100">{pendingTransfers.length}</div>
-            <p className="text-xs text-orange-600 dark:text-orange-400 flex items-center mt-1">
-              <ArrowDownRight className="h-3 w-3 mr-1" />
-              Transfers awaiting review
+          <CardContent>
+            <div className="text-3xl font-bold">{pendingTransfers.length}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <ArrowDownRight className="h-3 w-3 text-primary" />
+              Awaiting review
             </p>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Inventory Value</CardTitle>
-            <div className="p-2 bg-purple-500/20 rounded-lg">
-              <DollarSign className="h-4 w-4 text-purple-600" />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Inventory Value</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+          <CardContent>
+            <div className="text-2xl font-bold tabular-nums">
               {new Intl.NumberFormat("en-ET", {
                 style: "currency",
                 currency: "ETB",
@@ -303,115 +281,85 @@ export function ManagerDashboard() {
                 maximumFractionDigits: 0,
               }).format(stats.totalValue)}
             </div>
-            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Total asset value</p>
+            <p className="text-xs text-muted-foreground mt-1">Total asset value</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Performance Metrics */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border-0 shadow-lg">
+      {/* Performance & Stock Status */}
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  <TrendingUp className="h-4 w-4 text-primary" />
                   Warehouse Performance
                 </CardTitle>
                 <CardDescription>6-month efficiency and capacity trends</CardDescription>
               </div>
-              <Badge variant="outline" className="gap-1">
-                <Star className="h-3 w-3 text-yellow-500" />
-                High Performance
-              </Badge>
+              <Badge variant="outline" className="text-xs border-primary/30 text-primary">Live</Badge>
             </div>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
-                efficiency: { label: "Efficiency %", color: "#3b82f6" },
-                capacity: { label: "Capacity %", color: "#10b981" },
+                efficiency: { label: "Efficiency %", color: BRAND.primary },
+                capacity: { label: "Capacity %", color: BRAND.primary80 },
               }}
-              className="h-[300px]"
+              className="aspect-auto h-[280px] sm:h-[320px] w-full"
             >
-              <AreaChart data={performanceData}>
+              <AreaChart data={performanceData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
                 <defs>
-                  <linearGradient id="efficiencyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <linearGradient id="mgr-effGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={BRAND.primary} stopOpacity={0.25} />
+                    <stop offset="95%" stopColor={BRAND.primary} stopOpacity={0.02} />
                   </linearGradient>
-                  <linearGradient id="capacityGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  <linearGradient id="mgr-capGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={BRAND.primary80} stopOpacity={0.25} />
+                    <stop offset="95%" stopColor={BRAND.primary80} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Area
-                  type="monotone"
-                  dataKey="efficiency"
-                  stroke="#3b82f6"
-                  fillOpacity={1}
-                  fill="url(#efficiencyGradient)"
-                  strokeWidth={2}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="capacity"
-                  stroke="#10b981"
-                  fillOpacity={1}
-                  fill="url(#capacityGradient)"
-                  strokeWidth={2}
-                />
+                <Area type="monotone" dataKey="efficiency" stroke={BRAND.primary} fillOpacity={1} fill="url(#mgr-effGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="capacity" stroke={BRAND.primary80} fillOpacity={1} fill="url(#mgr-capGrad)" strokeWidth={2} />
               </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChartIcon className="h-5 w-5 text-emerald-600" />
-              Stock Status
-            </CardTitle>
-            <CardDescription>Current inventory health</CardDescription>
+            <CardTitle className="text-base">Stock Health</CardTitle>
+            <CardDescription>Current inventory status</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer
               config={{
-                inStock: { label: "In Stock", color: "#10b981" },
-                lowStock: { label: "Low Stock", color: "#f59e0b" },
-                outStock: { label: "Out of Stock", color: "#ef4444" },
+                inStock: { label: "In Stock", color: BRAND.success },
+                lowStock: { label: "Low Stock", color: BRAND.warning },
+                outStock: { label: "Out of Stock", color: BRAND.danger },
               }}
-              className="h-[250px]"
+              className="aspect-auto h-[220px] w-full"
             >
               <PieChart>
-                <Pie
-                  data={stockStatusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {stockStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Pie data={stockStatusData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={2} stroke="transparent">
+                  {stockStatusData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill} />
                   ))}
                 </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
             </ChartContainer>
-            <div className="mt-4 space-y-2">
-              {stockStatusData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }}></div>
-                    <span>{item.name}</span>
-                  </div>
-                  <span className="font-medium">{item.value}</span>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-1 text-xs">
+              {stockStatusData.map((s, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-sm inline-block" style={{ backgroundColor: s.fill }} />
+                  <span className="text-muted-foreground">{s.name}</span>
+                  <span className="font-medium">{s.value}</span>
                 </div>
               ))}
             </div>
@@ -419,64 +367,54 @@ export function ManagerDashboard() {
         </Card>
       </div>
 
-      {/* Category Analysis & Recent Activity */}
+      {/* Category & Activity */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-indigo-600" />
+              <BarChart3 className="h-4 w-4 text-primary" />
               Items by Category
             </CardTitle>
             <CardDescription>Distribution across {stats.categories} categories</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{ count: { label: "Items", color: "#6366f1" } }} className="h-[300px]">
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 12 }}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
+            <ChartContainer config={{ count: { label: "Items", color: BRAND.primary } }} className="aspect-auto h-[280px] w-full">
+              <BarChart data={categoryData} margin={{ top: 5, right: 15, left: 0, bottom: 60 }}>
+                <defs>
+                  <linearGradient id="mgr-catGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={BRAND.primary} />
+                    <stop offset="100%" stopColor={BRAND.primary80} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} interval={0} angle={-40} textAnchor="end" height={60} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar
-                  dataKey="count"
-                  fill="#6366f1"
-                  radius={[4, 4, 0, 0]}
-                  className="hover:opacity-80 transition-opacity"
-                />
+                <Bar dataKey="count" fill="url(#mgr-catGrad)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-green-600" />
+              <Activity className="h-4 w-4 text-primary" />
               Recent Activity
             </CardTitle>
             <CardDescription>Latest warehouse operations</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                  <div
-                    className={`p-2 rounded-full ${
-                      activity.type === "success"
-                        ? "bg-green-100 text-green-600"
-                        : activity.type === "warning"
-                          ? "bg-orange-100 text-orange-600"
-                          : "bg-blue-100 text-blue-600"
-                    }`}
-                  >
+                <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors">
+                  <div className={`p-2 rounded-full ${
+                    activity.type === "success"
+                      ? "bg-primary/10 text-primary"
+                      : activity.type === "warning"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/10 text-primary"
+                  }`}>
                     {activity.type === "success" ? (
                       <CheckCircle className="h-4 w-4" />
                     ) : activity.type === "warning" ? (
@@ -490,7 +428,7 @@ export function ManagerDashboard() {
                     <p className="text-sm text-muted-foreground">{activity.item}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-muted-foreground">{activity.user}</span>
-                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-xs text-muted-foreground">·</span>
                       <span className="text-xs text-muted-foreground">{formatTimeAgo(activity.time)}</span>
                     </div>
                   </div>
@@ -501,15 +439,15 @@ export function ManagerDashboard() {
         </Card>
       </div>
 
-      {/* Enhanced Category Browser */}
+      {/* Inventory Browser */}
       <CategoryBrowser inventory={inventory} />
 
-      {/* Team & Transfers Management */}
+      {/* Team & Transfers */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
+              <Users className="h-4 w-4 text-primary" />
               Team Management
             </CardTitle>
             <CardDescription>Your warehouse team members</CardDescription>
@@ -523,12 +461,9 @@ export function ManagerDashboard() {
             ) : (
               <div className="space-y-3">
                 {warehouseUsers.slice(0, 5).map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50"
-                  >
+                  <div key={user.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-medium">
                         {user.name?.charAt(0) || "U"}
                       </div>
                       <div>
@@ -537,15 +472,13 @@ export function ManagerDashboard() {
                       </div>
                     </div>
                     <Badge variant="outline" className="capitalize">
-                      {String(user.role || "")
-                        .replace("_", " ")
-                        .toLowerCase()}
+                      {String(user.role || "").replace("_", " ").toLowerCase()}
                     </Badge>
                   </div>
                 ))}
                 {warehouseUsers.length > 5 && (
                   <Link href="/users">
-                    <Button variant="outline" className="w-full bg-transparent">
+                    <Button variant="outline" className="w-full">
                       View All {warehouseUsers.length} Members
                     </Button>
                   </Link>
@@ -555,10 +488,10 @@ export function ManagerDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-orange-600" />
+              <Truck className="h-4 w-4 text-primary" />
               Pending Transfers
             </CardTitle>
             <CardDescription>Awaiting your approval</CardDescription>
@@ -566,21 +499,18 @@ export function ManagerDashboard() {
           <CardContent>
             {pendingTransfers.length === 0 ? (
               <div className="text-center py-8">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4 opacity-50" />
                 <p className="text-muted-foreground">No pending transfers</p>
                 <p className="text-sm text-muted-foreground">All transfers are up to date</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {pendingTransfers.slice(0, 4).map((transfer) => (
-                  <div
-                    key={transfer.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800"
-                  >
+                  <div key={transfer.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{transfer.item?.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {transfer.quantity} units • {transfer.fromWarehouse?.name} → {transfer.toWarehouse?.name}
+                        {transfer.quantity} units · {transfer.fromWarehouse?.name} → {transfer.toWarehouse?.name}
                       </p>
                       <p className="text-xs text-muted-foreground">Requested by {transfer.requestedBy?.name}</p>
                     </div>
@@ -594,7 +524,7 @@ export function ManagerDashboard() {
                 ))}
                 {pendingTransfers.length > 4 && (
                   <Link href="/transfers">
-                    <Button variant="outline" className="w-full bg-transparent">
+                    <Button variant="outline" className="w-full">
                       View All {pendingTransfers.length} Pending Transfers
                     </Button>
                   </Link>
@@ -605,7 +535,7 @@ export function ManagerDashboard() {
         </Card>
       </div>
 
-      {/* Enhanced Warehouse Images Panel */}
+      {/* Warehouse Gallery */}
       <WarehouseImagesPanel />
     </div>
   )
@@ -627,10 +557,10 @@ function CategoryBrowser({ inventory }: { inventory: any[] }) {
   const items = active === "all" ? inventory : byCat.get(active) || []
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Package className="h-5 w-5 text-emerald-600" />
+          <Package className="h-4 w-4 text-primary" />
           Inventory Browser
         </CardTitle>
         <CardDescription>Browse and filter items by category</CardDescription>
@@ -674,7 +604,7 @@ function CategoryBrowser({ inventory }: { inventory: any[] }) {
                 {items.slice(0, 8).map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/40 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{item.name}</p>
@@ -766,10 +696,10 @@ function WarehouseImagesPanel() {
   }
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-purple-600" />
+          <Calendar className="h-4 w-4 text-primary" />
           Warehouse Gallery
         </CardTitle>
         <CardDescription>Manage visual documentation of your warehouse</CardDescription>
@@ -779,21 +709,9 @@ function WarehouseImagesPanel() {
           <div className="space-y-4">
             <h4 className="font-medium">Add New Image</h4>
             <div className="space-y-3">
-              <Input
-                placeholder="Image URL"
-                value={form.url}
-                onChange={(e) => setForm({ ...form, url: e.target.value })}
-              />
-              <Input
-                placeholder="Title (optional)"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-              <Input
-                placeholder="Description (optional)"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
+              <Input placeholder="Image URL" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
+              <Input placeholder="Title (optional)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <Input placeholder="Description (optional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               <Button onClick={create} disabled={!form.url} className="w-full">
                 <Package className="h-4 w-4 mr-2" />
                 Add Image
@@ -804,7 +722,7 @@ function WarehouseImagesPanel() {
           <div className="lg:col-span-2">
             {loading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
                 <p className="text-muted-foreground mt-2">Loading images...</p>
               </div>
             ) : images.length === 0 ? (
@@ -816,8 +734,8 @@ function WarehouseImagesPanel() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {images.map((img) => (
-                  <div key={img.id} className="border rounded-lg p-4 space-y-3 hover:shadow-md transition-shadow">
-                    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                  <div key={img.id} className="border rounded-lg p-4 space-y-3 hover:bg-muted/20 transition-colors">
+                    <div className="aspect-video bg-muted rounded-lg overflow-hidden">
                       <img
                         src={img.url || "/placeholder.svg"}
                         alt={img.title || "Warehouse image"}
@@ -829,24 +747,9 @@ function WarehouseImagesPanel() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Input
-                        value={img.title || ""}
-                        onChange={(e) => update(img.id, { title: e.target.value })}
-                        placeholder="Image title"
-                        className="text-sm"
-                      />
-                      <Input
-                        value={img.description || ""}
-                        onChange={(e) => update(img.id, { description: e.target.value })}
-                        placeholder="Description"
-                        className="text-sm"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => remove(img.id)}
-                        className="w-full text-red-600 hover:text-red-700"
-                      >
+                      <Input value={img.title || ""} onChange={(e) => update(img.id, { title: e.target.value })} placeholder="Image title" className="text-sm" />
+                      <Input value={img.description || ""} onChange={(e) => update(img.id, { description: e.target.value })} placeholder="Description" className="text-sm" />
+                      <Button variant="outline" size="sm" onClick={() => remove(img.id)} className="w-full text-destructive hover:text-destructive">
                         Remove Image
                       </Button>
                     </div>

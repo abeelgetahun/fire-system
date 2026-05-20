@@ -22,9 +22,9 @@ const HEADER: Record<OverallFireStatus, string> = {
 }
 
 const LINE: Record<OverallFireStatus, string> = {
-  NORMAL:  "bg-slate-200",
-  WARNING: "bg-amber-300",
-  FIRE:    "bg-red-300",
+  NORMAL:  "bg-slate-200 dark:bg-slate-600",
+  WARNING: "bg-amber-300 dark:bg-amber-700",
+  FIRE:    "bg-red-300 dark:bg-red-700",
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ export function FireStatusPanel() {
   return (
     <div
       id="fire-monitor-panel"
-      className="mx-2 rounded-xl overflow-hidden border border-slate-200/80 shadow-sm bg-white"
+      className="mx-2 rounded-xl overflow-hidden border border-border shadow-sm bg-card"
     >
       {/* ── Header ── */}
       <div
@@ -84,11 +84,11 @@ export function FireStatusPanel() {
       {/* ── Room flow ── */}
       <div className="px-3.5 pt-3 pb-2">
         {loading ? (
-          <div className="py-3 text-center text-[11px] text-slate-400 animate-pulse">
+          <div className="py-3 text-center text-[11px] text-muted-foreground animate-pulse">
             Reading sensors…
           </div>
         ) : offline ? (
-          <div className="py-3 flex items-center justify-center gap-2 text-slate-400">
+          <div className="py-3 flex items-center justify-center gap-2 text-muted-foreground">
             <WifiOff className="h-3.5 w-3.5 flex-shrink-0" />
             <span className="text-[11px]">Simulator offline</span>
           </div>
@@ -133,7 +133,7 @@ export function FireStatusPanel() {
                   {/* Name + badge row */}
                   <div className="flex items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[11px] font-semibold text-slate-700 leading-[18px]">
+                      <span className="text-[11px] font-semibold text-foreground leading-[18px]">
                         {room.room}
                       </span>
                       <span
@@ -141,10 +141,10 @@ export function FireStatusPanel() {
                           "text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full",
                           "transition-all duration-500 ease-in-out",
                           room.status === "FIRE_CONFIRMED"
-                            ? "bg-red-100 text-red-700 ring-1 ring-red-200"
+                            ? "bg-red-100 text-red-700 ring-1 ring-red-200 dark:bg-red-950/50 dark:text-red-300 dark:ring-red-800"
                             : room.status === "SUSPICIOUS"
-                            ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
-                            : "bg-emerald-100 text-emerald-700",
+                            ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-800"
+                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
                         )}
                       >
                         {cfg.label}
@@ -171,12 +171,12 @@ export function FireStatusPanel() {
                   {(room.temperature != null || room.smokeLevel != null) && (
                     <div className="flex gap-2.5 mt-0.5">
                       {room.temperature != null && (
-                        <span className="text-[9px] text-slate-400 tabular-nums">
+                        <span className="text-[9px] text-muted-foreground tabular-nums">
                           {room.temperature}°C
                         </span>
                       )}
                       {room.smokeLevel != null && (
-                        <span className="text-[9px] text-slate-400 tabular-nums">
+                        <span className="text-[9px] text-muted-foreground tabular-nums">
                           smoke&nbsp;{room.smokeLevel}
                         </span>
                       )}
@@ -190,8 +190,8 @@ export function FireStatusPanel() {
       </div>
 
       {/* ── Footer ── */}
-      <div className="px-3.5 py-1.5 border-t border-slate-100 bg-slate-50/50">
-        <p className="text-[9px] text-slate-400">
+      <div className="px-3.5 py-1.5 border-t border-border bg-muted/50">
+        <p className="text-[9px] text-muted-foreground">
           {offline
             ? "Run bridge.py to connect"
             : `Updated ${lastRefresh.toLocaleTimeString()}`}

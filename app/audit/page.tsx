@@ -133,13 +133,13 @@ export default function AuditPage() {
   const getDiscrepancyBadge = (discrepancies: number) => {
     if (discrepancies === 0) {
       return (
-        <Badge variant="default" className="bg-green-500">
+        <Badge variant="default" className="bg-green-600 dark:bg-green-700">
           No Issues
         </Badge>
       )
     } else if (discrepancies <= 5) {
       return (
-        <Badge variant="secondary" className="bg-yellow-500">
+        <Badge variant="secondary" className="bg-yellow-500 dark:bg-yellow-600 text-yellow-950">
           {discrepancies} Minor
         </Badge>
       )

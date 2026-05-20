@@ -222,7 +222,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Card className="shadow-2xl bg-white/95 backdrop-blur-xl border-white/30 hover:shadow-3xl transition-all duration-300 hover:bg-white/98">
+          <Card className="shadow-2xl bg-white/95 dark:bg-card/95 backdrop-blur-xl border-white/30 dark:border-border/30 hover:shadow-3xl transition-all duration-300 hover:bg-white/98 dark:hover:bg-card/98">
             <CardHeader className="space-y-1">
               <CardTitle className="text-xl sm:text-2xl">Login</CardTitle>
               <CardDescription>Use your corporate email.</CardDescription>

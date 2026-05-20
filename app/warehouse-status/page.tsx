@@ -21,7 +21,7 @@ function WarehouseStatusContent() {
   const { overallStatus, unacknowledgedCount, offline } = useFireAlerts()
 
   return (
-    <div className="min-h-screen space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-white p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-white dark:from-background dark:via-background dark:to-background p-3 sm:p-4 lg:p-6">
       <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-slate-950 text-white shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(239,68,68,0.28),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.25),transparent_32%)]" />
         <div className="relative p-6 sm:p-8 lg:p-10">

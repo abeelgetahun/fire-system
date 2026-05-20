@@ -120,12 +120,12 @@ export default function ReportsPage() {
 
   const getTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      Inventory: "bg-blue-100 text-blue-800",
-      Movement: "bg-green-100 text-green-800",
-      Alert: "bg-red-100 text-red-800",
-      Audit: "bg-purple-100 text-purple-800",
+      Inventory: "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300",
+      Movement: "bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300",
+      Alert: "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300",
+      Audit: "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300",
     }
-    return <Badge className={colors[type] || "bg-gray-100 text-gray-800"}>{type}</Badge>
+    return <Badge className={colors[type] || "bg-muted text-muted-foreground"}>{type}</Badge>
   }
 
   const handleGenerateReport = () => {

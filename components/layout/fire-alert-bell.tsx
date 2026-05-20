@@ -48,7 +48,7 @@ export function FireAlertBell() {
           aria-label={hasAlerts ? `${unacknowledgedCount} fire alerts` : "Notifications"}
           className={cn(
             "relative rounded-full transition-all",
-            hasAlerts && "bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800",
+            hasAlerts && "bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60",
             isCritical && "fire-alert-pulse"
           )}
         >
@@ -71,7 +71,7 @@ export function FireAlertBell() {
           className={cn(
             "border-b px-4 py-3",
             hasAlerts
-              ? "border-red-100 bg-gradient-to-r from-red-50 to-orange-50"
+              ? "border-red-100 bg-gradient-to-r from-red-50 to-orange-50 dark:border-red-900 dark:from-red-950/50 dark:to-orange-950/50"
               : "bg-background"
           )}
         >
@@ -118,7 +118,7 @@ export function FireAlertBell() {
           </div>
         ) : (
           <div className="p-5 text-center">
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <p className="mt-3 text-sm font-medium">No active fire alerts</p>
@@ -141,8 +141,8 @@ function FireAlertRow({ alert }: { alert: RoomFireStatus }) {
       className={cn(
         "rounded-xl border p-3 transition-colors",
         critical
-          ? "border-red-200 bg-red-50/80"
-          : "border-amber-200 bg-amber-50/80"
+          ? "border-red-200 bg-red-50/80 dark:border-red-800 dark:bg-red-950/40"
+          : "border-amber-200 bg-amber-50/80 dark:border-amber-800 dark:bg-amber-950/40"
       )}
     >
       <div className="flex items-start gap-3">
@@ -165,7 +165,7 @@ function FireAlertRow({ alert }: { alert: RoomFireStatus }) {
             <Badge
               variant="outline"
               className={cn(
-                "shrink-0 border bg-white text-[10px]",
+                "shrink-0 border bg-card text-[10px]",
                 critical ? "border-red-200 text-red-700" : "border-amber-200 text-amber-700"
               )}
             >
@@ -190,13 +190,13 @@ function FireAlertRow({ alert }: { alert: RoomFireStatus }) {
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {alert.temperature != null && (
-              <Badge variant="outline" className="border-white bg-white text-[10px]">
+              <Badge variant="outline" className="border-border bg-card text-[10px]">
                 <Thermometer className="mr-1 h-3 w-3" />
                 {alert.temperature}
               </Badge>
             )}
             {alert.smokeLevel != null && (
-              <Badge variant="outline" className="border-white bg-white text-[10px]">
+              <Badge variant="outline" className="border-border bg-card text-[10px]">
                 <Wind className="mr-1 h-3 w-3" />
                 {alert.smokeLevel}
               </Badge>
@@ -207,7 +207,7 @@ function FireAlertRow({ alert }: { alert: RoomFireStatus }) {
               variant="outline"
               onClick={() => acknowledgeRoom(alert.room)}
               disabled={acknowledgingRoom === alert.room}
-              className="ml-auto h-7 border-white bg-white text-xs hover:bg-white/80"
+              className="ml-auto h-7 border-border bg-card text-xs hover:bg-muted"
             >
               {acknowledgingRoom === alert.room ? "Ack..." : "Acknowledge"}
             </Button>

@@ -28,8 +28,6 @@ export function ClerkDashboard() {
 
       const inventoryData = await apiClient.getInventory({ warehouseId: user?.warehouseId })
 
-      // Calculate stats
-      // Group by category
       const byCategory = new Map<string, any[]>()
       for (const item of inventoryData) {
         const cat = item.category?.name || "Uncategorized"
@@ -37,11 +35,10 @@ export function ClerkDashboard() {
         byCategory.get(cat)!.push(item)
       }
 
-  const groups = Array.from(byCategory.entries()).map(([category, items]) => ({ category, items }))
+      const groups = Array.from(byCategory.entries()).map(([category, items]) => ({ category, items }))
 
-  // Category-level stock states
-  const lowCats = groups.filter((g) => g.items.length > 0 && g.items.length < 10)
-  const outCats = groups.filter((g) => g.items.length === 0)
+      const lowCats = groups.filter((g) => g.items.length > 0 && g.items.length < 10)
+      const outCats = groups.filter((g) => g.items.length === 0)
 
       setStats({
         totalItems: inventoryData.length,
@@ -55,10 +52,9 @@ export function ClerkDashboard() {
       setRecentItems(inventoryData.slice(0, 5))
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error)
-      // Fallback data
-  setStats({ totalItems: 0, lowStockCategories: 0, categories: 0 })
-  setRecentItems([])
-  setCategoryGroups([])
+      setStats({ totalItems: 0, lowStockCategories: 0, categories: 0 })
+      setRecentItems([])
+      setCategoryGroups([])
     } finally {
       setLoading(false)
     }
@@ -67,68 +63,81 @@ export function ClerkDashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard data...</p>
-          </div>
+        <div className="space-y-2">
+          <div className="h-8 bg-muted rounded-lg w-64 animate-pulse" />
+          <div className="h-4 bg-muted rounded w-96 animate-pulse" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-8 bg-muted rounded w-1/2" />
+                  <div className="h-3 bg-muted rounded w-2/3" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       {/* Quick Actions Header */}
-      <div className="flex items-center justify-end">
-        <div className="flex space-x-2">
-          <Link href="/inventory/add">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Item
-            </Button>
-          </Link>
-          <Link href="/inventory">
-            <Button variant="outline">
-              <Eye className="h-4 w-4 mr-2" />
-              View All
-            </Button>
-          </Link>
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        <Link href="/inventory/add">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Item
+          </Button>
+        </Link>
+        <Link href="/inventory">
+          <Button variant="outline">
+            <Eye className="h-4 w-4 mr-2" />
+            View All
+          </Button>
+        </Link>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Package className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalItems || 0}</div>
-            <p className="text-xs text-muted-foreground">In your warehouse</p>
+            <div className="text-3xl font-bold">{stats?.totalItems || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">In your warehouse</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-amber-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Categories</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats?.lowStockCategories || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Categories with {"<"} 10 items</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Categories</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Categories</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Folder className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats?.lowStockCategories || 0}</div>
-            <p className="text-xs text-muted-foreground">Categories with {'<'} 10 items</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
-            <Package className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats?.categories || 0}</div>
-            <p className="text-xs text-muted-foreground">Item categories</p>
+            <div className="text-3xl font-bold">{stats?.categories || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Item categories</p>
           </CardContent>
         </Card>
       </div>
@@ -142,19 +151,19 @@ export function ClerkDashboard() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <Link href="/inventory/add">
-              <Button variant="outline" className="w-full h-20 flex flex-col bg-transparent">
+              <Button variant="outline" className="w-full h-20 flex flex-col">
                 <Plus className="h-6 w-6 mb-2" />
                 Add New Item
               </Button>
             </Link>
             <Link href="/inventory">
-              <Button variant="outline" className="w-full h-20 flex flex-col bg-transparent">
+              <Button variant="outline" className="w-full h-20 flex flex-col">
                 <Package className="h-6 w-6 mb-2" />
                 Update Stock
               </Button>
             </Link>
             <Link href="/inventory">
-              <Button variant="outline" className="w-full h-20 flex flex-col bg-transparent">
+              <Button variant="outline" className="w-full h-20 flex flex-col">
                 <Eye className="h-6 w-6 mb-2" />
                 View Inventory
               </Button>
@@ -172,13 +181,13 @@ export function ClerkDashboard() {
           </CardHeader>
           <CardContent>
             {lowStockCategories.length === 0 ? (
-              <p className="text-muted-foreground">None</p>
+              <p className="text-muted-foreground text-center py-4">No low-stock categories</p>
             ) : (
               <div className="space-y-2">
                 {lowStockCategories.map((c) => (
-                  <div key={c.category} className="flex items-center justify-between text-sm">
+                  <div key={c.category} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/40">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
                       <span>{c.category}</span>
                     </div>
                     <Badge variant="secondary">{c.count}</Badge>
@@ -195,13 +204,13 @@ export function ClerkDashboard() {
           </CardHeader>
           <CardContent>
             {outOfStockCategories.length === 0 ? (
-              <p className="text-muted-foreground">None</p>
+              <p className="text-muted-foreground text-center py-4">No out-of-stock categories</p>
             ) : (
               <div className="space-y-2">
                 {outOfStockCategories.map((c) => (
-                  <div key={c.category} className="flex items-center justify-between text-sm">
+                  <div key={c.category} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/40">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
                       <span>{c.category}</span>
                     </div>
                     <Badge variant="destructive">0</Badge>
@@ -213,7 +222,7 @@ export function ClerkDashboard() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Items & Categories */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -222,11 +231,11 @@ export function ClerkDashboard() {
           </CardHeader>
           <CardContent>
             {recentItems.length === 0 ? (
-              <p className="text-muted-foreground">No recent items</p>
+              <p className="text-muted-foreground text-center py-4">No recent items</p>
             ) : (
               <div className="space-y-3">
                 {recentItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between">
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
                     <div>
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
@@ -246,16 +255,16 @@ export function ClerkDashboard() {
           </CardHeader>
           <CardContent>
             {categoryGroups.length === 0 ? (
-              <p className="text-muted-foreground">No items</p>
+              <p className="text-muted-foreground text-center py-4">No items</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
                 {categoryGroups.map((group) => {
                   const isLow = group.items.length < 10
                   return (
-                    <div key={group.category} className="border rounded-md p-3">
+                    <div key={group.category} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Folder className="h-4 w-4 text-muted-foreground" />
+                          <Folder className="h-4 w-4 text-primary" />
                           <p className="font-medium">{group.category}</p>
                         </div>
                         <Badge variant={isLow ? "secondary" : "default"}>

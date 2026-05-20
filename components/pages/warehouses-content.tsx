@@ -410,7 +410,7 @@ export function WarehousesContent() {
                       <div className="font-medium">
                         {warehouse.currentStock.toLocaleString()} / {warehouse.capacity.toLocaleString()}
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                      <div className="w-full bg-muted rounded-full h-2 mt-1">
                         <div
                           className="bg-blue-600 h-2 rounded-full"
                           style={{ width: `${getCapacityPercentage(warehouse.currentStock, warehouse.capacity)}%` }}

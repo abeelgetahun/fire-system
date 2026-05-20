@@ -86,10 +86,10 @@ const STATUS_LABELS: Record<FireStatus, string> = {
 }
 
 const STATUS_STYLES: Record<FireStatus, string> = {
-  NORMAL: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  CLEARED: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  SUSPICIOUS: "border-amber-200 bg-amber-50 text-amber-700",
-  FIRE_CONFIRMED: "border-red-200 bg-red-50 text-red-700",
+  NORMAL: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+  CLEARED: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+  SUSPICIOUS: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+  FIRE_CONFIRMED: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300",
 }
 
 export function FireStatusSection({ variant = "compact" }: { variant?: "compact" | "full" }) {
@@ -111,8 +111,8 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
     try {
       const data = await apiClient.getFireDetectionStats()
       setStats({ ...EMPTY_STATS, ...data })
-    } catch (error) {
-      console.error("Failed to fetch fire detection stats:", error)
+    } catch {
+      // API returns graceful fallback on error; silence fetch failures
     } finally {
       setStatsLoading(false)
     }
@@ -149,8 +149,8 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
           overallStatus === "FIRE"
             ? "border-red-200 bg-gradient-to-br from-red-950 via-red-800 to-orange-700 text-white"
             : overallStatus === "WARNING"
-              ? "border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50 to-white"
-              : "border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-blue-50"
+              ? "border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50 to-white dark:border-amber-800 dark:from-amber-950 dark:via-orange-950 dark:to-background"
+              : "border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-blue-50 dark:border-emerald-900 dark:from-background dark:via-emerald-950/30 dark:to-background"
         )}
       >
         <div className="relative p-5 sm:p-6 lg:p-8">
@@ -163,8 +163,8 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
                   overallStatus === "FIRE"
                     ? "bg-white/15 text-white ring-1 ring-white/25"
                     : overallStatus === "WARNING"
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-emerald-100 text-emerald-700"
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
                 )}
               >
                 {overallStatus === "FIRE" ? (
@@ -184,8 +184,8 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
                       overallStatus === "FIRE"
                         ? "border-white/25 bg-white/15 text-white"
                         : overallStatus === "WARNING"
-                          ? "border-amber-200 bg-amber-100 text-amber-800"
-                          : "border-emerald-200 bg-emerald-100 text-emerald-800"
+                          ? "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+                          : "border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
                     )}
                   >
                     {overallStatus === "FIRE"
@@ -214,7 +214,7 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
                   fetchStatus()
                   fetchStats()
                 }}
-                className={cn(overallStatus === "FIRE" && "bg-white text-red-700 hover:bg-white/90")}
+                className={cn(overallStatus === "FIRE" && "bg-white text-red-700 hover:bg-white/90 dark:bg-slate-100 dark:hover:bg-slate-200")}
               >
                 <RefreshCw className={cn("h-4 w-4", (loading || statsLoading) && "animate-spin")} />
                 Refresh
@@ -280,7 +280,7 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
           <LiveFireFlowDiagram rooms={rooms} offline={offline} />
 
           <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-            <Card className="border-0 bg-white/90 shadow-xl">
+            <Card className="border-0 bg-card/90 shadow-xl">
             <CardHeader className="pb-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -296,8 +296,8 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
                   className={cn(
                     "w-fit",
                     offline
-                      ? "bg-red-100 text-red-700"
-                      : "bg-emerald-100 text-emerald-700"
+                      ? "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"
+                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
                   )}
                 >
                   {offline ? (
@@ -321,7 +321,7 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
                 ))}
               </div>
 
-              <div className="rounded-2xl border bg-slate-50 p-4">
+              <div className="rounded-2xl border bg-muted/50 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold">Sensor Network Health</p>
@@ -334,11 +334,11 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
                 <Progress value={sensorHealthPercent} className="h-2" />
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {stats.sensors.rooms.map((sensor) => (
-                    <div key={sensor.room} className="flex items-center justify-between rounded-xl bg-white p-3 text-xs">
+                    <div key={sensor.room} className="flex items-center justify-between rounded-xl bg-card p-3 text-xs">
                       <span className="font-medium">{sensor.room}</span>
                       <Badge
                         variant="outline"
-                        className={sensor.online ? STATUS_STYLES[sensor.status] : "border-slate-200 bg-slate-100 text-slate-500"}
+                        className={sensor.online ? STATUS_STYLES[sensor.status] : "border-border bg-muted text-muted-foreground"}
                       >
                         {sensor.online ? STATUS_LABELS[sensor.status] : "Offline"}
                       </Badge>
@@ -349,7 +349,7 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
             </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/90 shadow-xl">
+            <Card className="border-0 bg-card/90 shadow-xl">
             <CardHeader>
               <CardTitle>Fire Alert Log</CardTitle>
               <CardDescription>
@@ -379,10 +379,10 @@ export function FireStatusSection({ variant = "compact" }: { variant?: "compact"
       )}
 
       {variant === "compact" && latestFireEvent && (
-        <Card className="border-0 bg-white/80 shadow-lg">
+        <Card className="border-0 bg-card/80 shadow-lg">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-red-50 p-2 text-red-600">
+              <div className="rounded-full bg-red-50 p-2 text-red-600 dark:bg-red-950/40 dark:text-red-400">
                 <Flame className="h-4 w-4" />
               </div>
               <div>
@@ -418,10 +418,10 @@ function FireMetricCard({
   tone: "critical" | "warning" | "safe" | "neutral"
 }) {
   const styles = {
-    critical: "border-red-200 bg-gradient-to-br from-red-50 to-white text-red-700",
-    warning: "border-amber-200 bg-gradient-to-br from-amber-50 to-white text-amber-700",
-    safe: "border-emerald-200 bg-gradient-to-br from-emerald-50 to-white text-emerald-700",
-    neutral: "border-blue-200 bg-gradient-to-br from-blue-50 to-white text-blue-700",
+    critical: "border-red-200 bg-gradient-to-br from-red-50 to-white text-red-700 dark:border-red-800 dark:from-red-950/40 dark:to-card dark:text-red-300",
+    warning: "border-amber-200 bg-gradient-to-br from-amber-50 to-white text-amber-700 dark:border-amber-800 dark:from-amber-950/40 dark:to-card dark:text-amber-300",
+    safe: "border-emerald-200 bg-gradient-to-br from-emerald-50 to-white text-emerald-700 dark:border-emerald-800 dark:from-emerald-950/40 dark:to-card dark:text-emerald-300",
+    neutral: "border-blue-200 bg-gradient-to-br from-blue-50 to-white text-blue-700 dark:border-blue-800 dark:from-blue-950/40 dark:to-card dark:text-blue-300",
   }
 
   return (
@@ -429,12 +429,12 @@ function FireMetricCard({
       <Card className={cn("h-full overflow-hidden border shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl", styles[tone])}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="rounded-2xl bg-white/80 p-2 shadow-sm">{icon}</div>
+            <div className="rounded-2xl bg-card/80 p-2 shadow-sm">{icon}</div>
             <ArrowUpRight className="h-4 w-4 opacity-50 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </div>
           <p className="mt-4 text-xs font-semibold uppercase tracking-wide opacity-75">{title}</p>
-          <p className="mt-1 text-3xl font-bold text-slate-950">{value}</p>
-          <p className="mt-2 line-clamp-2 text-xs text-slate-500">{description}</p>
+          <p className="mt-1 text-3xl font-bold text-foreground">{value}</p>
+          <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{description}</p>
         </CardContent>
       </Card>
     </Link>
@@ -475,7 +475,7 @@ function LiveFireFlowDiagram({
   }))
 
   return (
-    <Card className="overflow-hidden border-0 bg-white/90 shadow-xl">
+    <Card className="overflow-hidden border-0 bg-card/90 shadow-xl">
       <CardHeader className="pb-0">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -489,7 +489,7 @@ function LiveFireFlowDiagram({
           </div>
           <Badge
             variant="outline"
-            className={offline ? "border-red-200 bg-red-50 text-red-700" : "border-blue-200 bg-blue-50 text-blue-700"}
+            className={offline ? "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300" : "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300"}
           >
             {offline ? "Feed paused" : "Live updating"}
           </Badge>
@@ -604,9 +604,9 @@ function LiveFireFlowDiagram({
 
         <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-4">
           {Object.entries(statusLayout).map(([key, status]) => (
-            <div key={key} className="flex items-center gap-2 rounded-xl border bg-white p-3">
+            <div key={key} className="flex items-center gap-2 rounded-xl border bg-card p-3">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: status.color }} />
-              <span className="font-medium text-slate-700">{status.label}</span>
+              <span className="font-medium text-foreground">{status.label}</span>
             </div>
           ))}
         </div>
@@ -728,7 +728,7 @@ function LiveZoneCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-slate-950">{room.room}</p>
+          <p className="text-sm font-bold text-foreground">{room.room}</p>
           <Badge variant="outline" className={cn("mt-2", STATUS_STYLES[room.status])}>
             {alerting ? getFireSeverity(room.status) : STATUS_LABELS[room.status]}
           </Badge>
@@ -741,25 +741,25 @@ function LiveZoneCard({
           <ShieldCheck className="h-5 w-5 text-emerald-600" />
         )}
       </div>
-      <p className="mt-3 min-h-10 text-xs text-slate-600">
+      <p className="mt-3 min-h-10 text-xs text-muted-foreground">
         {room.message ?? "No active hazard reported from this room."}
       </p>
-      <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
         {room.temperature != null && (
-          <Badge variant="outline" className="bg-white">
+          <Badge variant="outline" className="bg-card">
             <Thermometer className="mr-1 h-3 w-3" />
             {room.temperature}
           </Badge>
         )}
         {room.smokeLevel != null && (
-          <Badge variant="outline" className="bg-white">
+          <Badge variant="outline" className="bg-card">
             <Wind className="mr-1 h-3 w-3" />
             {room.smokeLevel}
           </Badge>
         )}
       </div>
       <div className="mt-4 flex items-center justify-between gap-2">
-        <span className="text-[11px] text-slate-500">
+        <span className="text-[11px] text-muted-foreground">
           {formatFireAlertTime(room.lastUpdated)}
         </span>
         {alerting && !room.acknowledged && (
@@ -774,7 +774,7 @@ function LiveZoneCard({
 
 function FireEventRow({ event }: { event: FireEventLogItem }) {
   return (
-    <div className="rounded-2xl border bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">{event.room}</p>
@@ -787,7 +787,7 @@ function FireEventRow({ event }: { event: FireEventLogItem }) {
         </Badge>
       </div>
       {event.message && (
-        <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
+        <p className="mt-3 rounded-xl bg-muted p-3 text-xs text-muted-foreground">
           {event.message}
         </p>
       )}

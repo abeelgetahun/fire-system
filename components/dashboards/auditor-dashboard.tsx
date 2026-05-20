@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { apiClient } from "@/lib/api-client"
-import { AlertTriangle, CheckCircle, Calendar, TrendingUp } from "lucide-react"
+import { AlertTriangle, CheckCircle, Calendar, TrendingUp, ArrowUpRight } from "lucide-react"
 
 export function AuditorDashboard() {
   const [stats, setStats] = useState<any>(null)
@@ -18,8 +18,7 @@ export function AuditorDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      // Fetch auditor-specific data
-      const data = await apiClient.getDashboardStats()
+      await apiClient.getDashboardStats()
       setStats({
         scheduledAudits: 3,
         completedAudits: 8,
@@ -44,19 +43,30 @@ export function AuditorDashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard data...</p>
-          </div>
+        <div className="space-y-2">
+          <div className="h-8 bg-muted rounded-lg w-64 animate-pulse" />
+          <div className="h-4 bg-muted rounded w-96 animate-pulse" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-8 bg-muted rounded w-1/2" />
+                  <div className="h-3 bg-muted rounded w-2/3" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Quick Actions Header */}
+    <div className="space-y-6 pb-8">
+      {/* Quick Action */}
       <div className="flex items-center justify-end">
         <Button>
           <Calendar className="h-4 w-4 mr-2" />
@@ -65,48 +75,57 @@ export function AuditorDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled Audits</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Scheduled Audits</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Calendar className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.scheduledAudits || 0}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="text-3xl font-bold">{stats?.scheduledAudits || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">This month</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Audits</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Completed Audits</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <CheckCircle className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats?.completedAudits || 0}</div>
-            <p className="text-xs text-muted-foreground">This quarter</p>
+            <div className="text-3xl font-bold">{stats?.completedAudits || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <ArrowUpRight className="h-3 w-3 text-primary" />
+              This quarter
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-amber-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Discrepancies</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats?.discrepanciesFound || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Found this month</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Discrepancies</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Compliance Score</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats?.discrepanciesFound || 0}</div>
-            <p className="text-xs text-muted-foreground">Found this month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Compliance Score</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats?.complianceScore || 0}%</div>
-            <p className="text-xs text-muted-foreground">Overall rating</p>
+            <div className="text-3xl font-bold">{stats?.complianceScore || 0}%</div>
+            <p className="text-xs text-muted-foreground mt-1">Overall rating</p>
           </CardContent>
         </Card>
       </div>
@@ -118,8 +137,8 @@ export function AuditorDashboard() {
           <CardDescription>Scheduled audit activities</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/40 transition-colors">
               <div className="space-y-1">
                 <p className="font-medium">Addis Ababa Central - Full Audit</p>
                 <p className="text-sm text-muted-foreground">Scheduled for January 20, 2024</p>
@@ -127,7 +146,7 @@ export function AuditorDashboard() {
               </div>
               <Badge variant="secondary">Scheduled</Badge>
             </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/40 transition-colors">
               <div className="space-y-1">
                 <p className="font-medium">Dire Dawa Regional - Spot Check</p>
                 <p className="text-sm text-muted-foreground">Scheduled for January 25, 2024</p>
@@ -139,7 +158,7 @@ export function AuditorDashboard() {
         </CardContent>
       </Card>
 
-      {/* Reports */}
+      {/* Reports & Compliance */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -148,14 +167,14 @@ export function AuditorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
                 <div>
                   <p className="font-medium">Bahir Dar Branch Audit</p>
                   <p className="text-sm text-muted-foreground">Due: January 18, 2024</p>
                 </div>
                 <Badge variant="destructive">Overdue</Badge>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
                 <div>
                   <p className="font-medium">Mekelle Central Review</p>
                   <p className="text-sm text-muted-foreground">Due: January 22, 2024</p>
@@ -172,28 +191,20 @@ export function AuditorDashboard() {
             <CardDescription>Monthly compliance performance</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">December 2023</span>
-                <div className="flex items-center space-x-2">
-                  <div className="text-sm font-medium">96%</div>
-                  <TrendingUp className="h-3 w-3 text-green-500" />
+            <div className="space-y-3">
+              {[
+                { month: "December 2023", score: 96 },
+                { month: "November 2023", score: 92 },
+                { month: "October 2023", score: 89 },
+              ].map(({ month, score }) => (
+                <div key={month} className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
+                  <span className="text-sm font-medium">{month}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-bold">{score}%</div>
+                    <ArrowUpRight className="h-3 w-3 text-primary" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">November 2023</span>
-                <div className="flex items-center space-x-2">
-                  <div className="text-sm font-medium">92%</div>
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">October 2023</span>
-                <div className="flex items-center space-x-2">
-                  <div className="text-sm font-medium">89%</div>
-                  <TrendingUp className="h-3 w-3 text-orange-500" />
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
