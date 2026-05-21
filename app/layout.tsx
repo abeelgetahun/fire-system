@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster"
 import SplashScreen from "@/components/layout/splash-screen"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ChatbotRoot } from "@/components/Chatbot/ChatbotRoot"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const carterOne = Carter_One({ weight: "400", subsets: ["latin"], variable: "--font-carter-one" })
@@ -37,6 +38,7 @@ export default function RootLayout({
             <SplashScreen />
             {children}
             <Toaster />
+            <ChatbotRoot />
             <Analytics />
           </AuthProvider>
         </ThemeProvider>
