@@ -47,15 +47,19 @@ export function useChatbot() {
       const data = await res.json()
 
       if (!res.ok) {
+        let errorContent: string
+        if (res.status === 429) {
+          errorContent =
+            data.error ||
+            "The assistant is temporarily rate-limited. Please wait a moment and try again."
+        } else if (data.error === "Authentication required") {
+          errorContent = "Please sign in again to use the assistant."
+        } else {
+          errorContent = data.error || "Sorry, I could not get a response."
+        }
         setMessages((prev) => [
           ...prev,
-          {
-            role: "assistant",
-            content:
-              data.error === "Authentication required"
-                ? "Please sign in again to use the assistant."
-                : data.error || "Sorry, I could not get a response.",
-          },
+          { role: "assistant", content: errorContent },
         ])
         return
       }
